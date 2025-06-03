@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # MySQL数据库
+  mysql:
+    image: mysql:8.0
+    container_name: aublog_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-aublog}
+      MYSQL_USER: ${MYSQL_USER:-aublog_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-aublog123}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - aublog_network
+
+  # Redis缓存 (可选)
+  redis:
+    image: redis:7-alpine
+    container_name: aublog_redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - aublog_network
+
+  # Flask应用
+  web:
+    build: .
+    container_name: aublog_web
+    restart: unless-stopped
+    environment:
+      FLASK_ENV: production
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-this}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${MYSQL_USER:-aublog_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-aublog123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-aublog}
+      BLOG_TITLE: ${BLOG_TITLE:-我的个人博客}
+      BLOG_SUBTITLE: ${BLOG_SUBTITLE:-分享技术与生活}
+      BLOG_DOMAIN: ${BLOG_DOMAIN:-sub.wswldcs.edu.deal}
+    volumes:
+      - ./app/static/uploads:/app/app/static/uploads
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - aublog_network
+
+  # Nginx反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: aublog_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - web
+    networks:
+      - aublog_network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  aublog_network:
+    driver: bridge

@@ -1,0 +1,477 @@
+{% extends "base.html" %}
+
+{% block title %}关于我 - {{ config.BLOG_TITLE }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <section class="about-hero mb-5">
+        <div class="row align-items-center">
+            <div class="col-lg-4 text-center mb-4 mb-lg-0" data-aos="fade-right">
+                <div class="author-avatar">
+                    {% if site_config and site_config.author_avatar %}
+                    <img src="{{ site_config.author_avatar }}" alt="{{ config.AUTHOR_NAME }}" 
+                         class="rounded-circle img-fluid shadow-lg" style="width: 250px; height: 250px; object-fit: cover;">
+                    {% else %}
+                    <div class="avatar-placeholder bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-lg"
+                         style="width: 250px; height: 250px; font-size: 4rem; margin: 0 auto;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-8" data-aos="fade-left">
+                <h1 class="display-4 fw-bold mb-3">你好，我是 {{ config.AUTHOR_NAME }}</h1>
+                <p class="lead text-muted mb-4">
+                    {% if site_config and site_config.author_bio %}
+                        {{ site_config.author_bio }}
+                    {% else %}
+                        一个热爱编程和技术的开发者，喜欢分享知识，记录成长历程。
+                    {% endif %}
+                </p>
+                
+                <!-- Social Links -->
+                <div class="social-links mb-4">
+                    {% if site_config %}
+                        {% if site_config.github_url %}
+                        <a href="{{ site_config.github_url }}" target="_blank" class="btn btn-outline-dark me-2 mb-2">
+                            <i class="fab fa-github me-1"></i>GitHub
+                        </a>
+                        {% endif %}
+                        {% if site_config.email %}
+                        <a href="mailto:{{ site_config.email }}" class="btn btn-outline-primary me-2 mb-2">
+                            <i class="fas fa-envelope me-1"></i>邮箱
+                        </a>
+                        {% endif %}
+                        {% if site_config.twitter_url %}
+                        <a href="{{ site_config.twitter_url }}" target="_blank" class="btn btn-outline-info me-2 mb-2">
+                            <i class="fab fa-twitter me-1"></i>Twitter
+                        </a>
+                        {% endif %}
+                        {% if site_config.linkedin_url %}
+                        <a href="{{ site_config.linkedin_url }}" target="_blank" class="btn btn-outline-primary me-2 mb-2">
+                            <i class="fab fa-linkedin me-1"></i>LinkedIn
+                        </a>
+                        {% endif %}
+                        {% if site_config.weibo_url %}
+                        <a href="{{ site_config.weibo_url }}" target="_blank" class="btn btn-outline-danger me-2 mb-2">
+                            <i class="fab fa-weibo me-1"></i>微博
+                        </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="quick-stats">
+                    <div class="row">
+                        <div class="col-4 text-center">
+                            <div class="stat-item">
+                                <h4 class="fw-bold text-primary" id="codingYears">3+</h4>
+                                <small class="text-muted">编程年数</small>
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="stat-item">
+                                <h4 class="fw-bold text-success" id="projectCount">10+</h4>
+                                <small class="text-muted">项目经验</small>
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="stat-item">
+                                <h4 class="fw-bold text-warning" id="blogPosts">50+</h4>
+                                <small class="text-muted">博客文章</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Skills Section -->
+    <section class="skills-section mb-5" data-aos="fade-up">
+        <div class="row">
+            <div class="col-12 text-center mb-4">
+                <h2 class="fw-bold">技能专长</h2>
+                <p class="text-muted">我熟悉的技术栈和工具</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="skill-category">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-code text-primary me-2"></i>编程语言
+                    </h5>
+                    <div class="skills-grid">
+                        <div class="skill-item">
+                            <i class="fab fa-python fa-2x text-primary"></i>
+                            <span>Python</span>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fab fa-js-square fa-2x text-warning"></i>
+                            <span>JavaScript</span>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fab fa-html5 fa-2x text-danger"></i>
+                            <span>HTML5</span>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fab fa-css3-alt fa-2x text-info"></i>
+                            <span>CSS3</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="skill-category">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-tools text-success me-2"></i>框架工具
+                    </h5>
+                    <div class="skills-grid">
+                        <div class="skill-item">
+                            <i class="fas fa-flask fa-2x text-dark"></i>
+                            <span>Flask</span>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fab fa-react fa-2x text-info"></i>
+                            <span>React</span>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fab fa-bootstrap fa-2x text-purple"></i>
+                            <span>Bootstrap</span>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fab fa-git-alt fa-2x text-danger"></i>
+                            <span>Git</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Experience Timeline -->
+    <section class="experience-section mb-5" data-aos="fade-up">
+        <div class="row">
+            <div class="col-12 text-center mb-4">
+                <h2 class="fw-bold">学习经历</h2>
+                <p class="text-muted">我的技术成长之路</p>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="experience-timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-primary">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h5 class="fw-bold">开始编程学习</h5>
+                            <p class="text-muted">接触编程，学习Python基础语法</p>
+                            <small class="text-muted">2021年</small>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-success">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h5 class="fw-bold">Web开发入门</h5>
+                            <p class="text-muted">学习HTML、CSS、JavaScript，开始Web开发</p>
+                            <small class="text-muted">2022年</small>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-warning">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h5 class="fw-bold">项目实践</h5>
+                            <p class="text-muted">开始独立完成项目，学习Flask框架</p>
+                            <small class="text-muted">2023年</small>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-info">
+                            <i class="fas fa-blog"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h5 class="fw-bold">技术分享</h5>
+                            <p class="text-muted">创建个人博客，分享技术心得</p>
+                            <small class="text-muted">2024年</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Interests Section -->
+    <section class="interests-section mb-5" data-aos="fade-up">
+        <div class="row">
+            <div class="col-12 text-center mb-4">
+                <h2 class="fw-bold">兴趣爱好</h2>
+                <p class="text-muted">工作之余的生活乐趣</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="interest-card text-center">
+                    <i class="fas fa-book fa-3x text-primary mb-3"></i>
+                    <h5>阅读</h5>
+                    <p class="text-muted">喜欢阅读技术书籍和科幻小说</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="interest-card text-center">
+                    <i class="fas fa-music fa-3x text-success mb-3"></i>
+                    <h5>音乐</h5>
+                    <p class="text-muted">听音乐是我放松的方式</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="interest-card text-center">
+                    <i class="fas fa-gamepad fa-3x text-warning mb-3"></i>
+                    <h5>游戏</h5>
+                    <p class="text-muted">偶尔玩游戏放松心情</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="interest-card text-center">
+                    <i class="fas fa-camera fa-3x text-info mb-3"></i>
+                    <h5>摄影</h5>
+                    <p class="text-muted">用镜头记录美好瞬间</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contact Section -->
+    <section class="contact-section" data-aos="fade-up">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="contact-card card border-0 shadow-lg">
+                    <div class="card-body p-5 text-center">
+                        <h3 class="fw-bold mb-4">
+                            <i class="fas fa-envelope me-2"></i>联系我
+                        </h3>
+                        <p class="text-muted mb-4">
+                            如果您有任何问题、建议或合作意向，欢迎随时联系我！
+                        </p>
+                        
+                        <div class="contact-info mb-4">
+                            {% if site_config and site_config.email %}
+                            <div class="contact-item mb-3">
+                                <i class="fas fa-envelope text-primary me-2"></i>
+                                <a href="mailto:{{ site_config.email }}" class="text-decoration-none">
+                                    {{ site_config.email }}
+                                </a>
+                            </div>
+                            {% endif %}
+                            
+                            {% if site_config and site_config.qq %}
+                            <div class="contact-item mb-3">
+                                <i class="fab fa-qq text-info me-2"></i>
+                                <span>QQ: {{ site_config.qq }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if site_config and site_config.wechat %}
+                            <div class="contact-item mb-3">
+                                <i class="fab fa-weixin text-success me-2"></i>
+                                <span>微信: {{ site_config.wechat }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-center gap-3">
+                            {% if site_config and site_config.email %}
+                            <a href="mailto:{{ site_config.email }}" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i>发送邮件
+                            </a>
+                            {% endif %}
+                            <a href="{{ url_for('main.blog') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-blog me-1"></i>查看博客
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.skill-item {
+    text-align: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+}
+
+.skill-item:hover {
+    transform: translateY(-5px);
+}
+
+.skill-item span {
+    display: block;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+.experience-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.experience-timeline::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--bs-light);
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -30px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+}
+
+.timeline-content {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.interest-card {
+    padding: 2rem 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+}
+
+.interest-card:hover {
+    transform: translateY(-5px);
+}
+
+.contact-card {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+
+.stat-item {
+    padding: 1rem;
+}
+
+@media (max-width: 768px) {
+    .skills-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .experience-timeline {
+        padding-left: 1rem;
+    }
+    
+    .timeline-marker {
+        left: -20px;
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 初始化AOS动画
+    AOS.init({
+        duration: 800,
+        once: true,
+        offset: 100
+    });
+    
+    // 数字动画
+    animateNumbers();
+    
+    // 技能卡片悬停效果
+    $('.skill-item').hover(
+        function() {
+            $(this).find('i').addClass('fa-bounce');
+        },
+        function() {
+            $(this).find('i').removeClass('fa-bounce');
+        }
+    );
+});
+
+function animateNumbers() {
+    // 简单的数字动画效果
+    const counters = ['#codingYears', '#projectCount', '#blogPosts'];
+    const targets = [3, 10, 50];
+    
+    counters.forEach((selector, index) => {
+        const element = $(selector);
+        const target = targets[index];
+        let current = 0;
+        
+        const increment = target / 50;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            element.text(Math.floor(current) + '+');
+        }, 50);
+    });
+}
+
+// 复制联系方式
+function copyContact(type, value) {
+    navigator.clipboard.writeText(value).then(function() {
+        alert(`${type}已复制到剪贴板: ${value}`);
+    });
+}
+
+// 下载简历（如果有的话）
+function downloadResume() {
+    // 这里可以添加简历下载逻辑
+    alert('简历下载功能开发中...');
+}
+</script>
+{% endblock %}

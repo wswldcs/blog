@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}{{ config.BLOG_TITLE }} - {{ config.BLOG_SUBTITLE }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center min-vh-50">
+            <div class="col-lg-6" data-aos="fade-right">
+                <h1 class="display-4 fw-bold mb-4">
+                    欢迎来到我的博客
+                </h1>
+                <p class="lead mb-4">
+                    {{ config.BLOG_SUBTITLE }}
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('main.blog') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-blog me-2"></i>阅读博客
+                    </a>
+                    <a href="{{ url_for('main.about') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user me-2"></i>了解我
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center" data-aos="fade-left">
+                <div class="hero-image">
+                    <i class="fas fa-laptop-code fa-10x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="stat-card">
+                    <i class="fas fa-blog fa-3x text-primary mb-3"></i>
+                    <h3 class="fw-bold">{{ stats.total_posts }}</h3>
+                    <p class="text-muted">篇文章</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="stat-card">
+                    <i class="fas fa-folder fa-3x text-success mb-3"></i>
+                    <h3 class="fw-bold">{{ stats.total_categories }}</h3>
+                    <p class="text-muted">个分类</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="stat-card">
+                    <i class="fas fa-tags fa-3x text-warning mb-3"></i>
+                    <h3 class="fw-bold">{{ stats.total_tags }}</h3>
+                    <p class="text-muted">个标签</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="400">
+                <div class="stat-card">
+                    <i class="fas fa-users fa-3x text-info mb-3"></i>
+                    <h3 class="fw-bold">{{ stats.total_visitors }}</h3>
+                    <p class="text-muted">位访客</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Posts -->
+{% if featured_posts %}
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5" data-aos="fade-up">
+                <h2 class="display-5 fw-bold">精选文章</h2>
+                <p class="lead text-muted">分享我的技术心得和生活感悟</p>
+            </div>
+        </div>
+        <div class="row">
+            {% for post in featured_posts %}
+            <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                <div class="card h-100 shadow-sm hover-lift">
+                    {% if post.featured_image %}
+                    <img src="{{ post.featured_image }}" class="card-img-top" alt="{{ post.title }}">
+                    {% else %}
+                    <div class="card-img-top bg-gradient-primary d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <i class="fas fa-file-alt fa-3x text-white"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ post.title }}</h5>
+                        <p class="card-text text-muted">
+                            {{ post.summary or post.content|truncate(100) }}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ post.created_at|date }}
+                            </small>
+                            <small class="text-muted">
+                                <i class="fas fa-eye me-1"></i>
+                                {{ post.view_count }}
+                            </small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a href="{{ url_for('main.post', slug=post.slug) }}" class="btn btn-primary btn-sm">
+                            阅读全文 <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                        {% if post.category %}
+                        <span class="badge bg-secondary ms-2">{{ post.category.name }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Recent Posts -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-up">
+                    <h3 class="fw-bold">最新文章</h3>
+                    <a href="{{ url_for('main.blog') }}" class="btn btn-outline-primary">
+                        查看全部 <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                
+                {% for post in recent_posts %}
+                <div class="card mb-3 shadow-sm" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5 class="card-title">
+                                    <a href="{{ url_for('main.post', slug=post.slug) }}" class="text-decoration-none">
+                                        {{ post.title }}
+                                    </a>
+                                </h5>
+                                <p class="card-text text-muted">
+                                    {{ post.summary or post.content|truncate(150) }}
+                                </p>
+                                <div class="d-flex gap-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ post.created_at|date }}
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="fas fa-eye me-1"></i>
+                                        {{ post.view_count }}
+                                    </small>
+                                    {% if post.category %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-folder me-1"></i>
+                                        {{ post.category.name }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                {% for tag in post.tags[:3] %}
+                                <span class="badge bg-light text-dark me-1">{{ tag.name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Calendar Widget -->
+                <div class="card mb-4" data-aos="fade-left">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-calendar me-2"></i>日历</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="calendar"></div>
+                    </div>
+                </div>
+                
+                <!-- Categories -->
+                <div class="card mb-4" data-aos="fade-left" data-aos-delay="100">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-folder me-2"></i>分类</h6>
+                    </div>
+                    <div class="card-body">
+                        {% for category in categories %}
+                        <a href="{{ url_for('main.blog', category=category.id) }}" 
+                           class="d-flex justify-content-between align-items-center text-decoration-none mb-2">
+                            <span>{{ category.name }}</span>
+                            <span class="badge bg-primary">{{ category.posts.filter_by(is_published=True).count() }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Tags Cloud -->
+                <div class="card" data-aos="fade-left" data-aos-delay="200">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-tags me-2"></i>标签云</h6>
+                    </div>
+                    <div class="card-body">
+                        {% for tag in tags %}
+                        <a href="{{ url_for('main.blog', tag=tag.id) }}" 
+                           class="badge bg-light text-dark me-1 mb-1 text-decoration-none">
+                            {{ tag.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 初始化日历
+$(document).ready(function() {
+    loadCalendar();
+});
+
+function loadCalendar() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    
+    $.get(`/api/calendar?year=${year}&month=${month}`)
+        .done(function(response) {
+            if (response.success) {
+                renderCalendar(response.data);
+            }
+        });
+}
+
+function renderCalendar(data) {
+    // 简单的日历渲染
+    const calendar = $('#calendar');
+    calendar.html(`
+        <div class="text-center mb-2">
+            <strong>${data.year}年${data.month}月</strong>
+        </div>
+        <div class="calendar-grid">
+            <!-- 这里可以添加更复杂的日历组件 -->
+            <p class="text-muted small">本月共有 ${Object.keys(data.posts).length} 篇文章</p>
+        </div>
+    `);
+}
+</script>
+{% endblock %}

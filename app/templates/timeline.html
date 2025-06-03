@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+{% block title %}学习历程 - {{ config.BLOG_TITLE }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center" data-aos="fade-up">
+            <h1 class="display-4 fw-bold">学习历程</h1>
+            <p class="lead text-muted">记录我的成长足迹和技术里程碑</p>
+        </div>
+    </div>
+    
+    <!-- Timeline -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            {% if timeline_items %}
+            <div class="timeline">
+                {% for item in timeline_items %}
+                <div class="timeline-item {% if item.is_milestone %}milestone{% endif %}" 
+                     data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+                    <div class="timeline-marker">
+                        <div class="timeline-icon bg-{{ item.color }}">
+                            <i class="{{ item.icon }}"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-content">
+                        <div class="timeline-card card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title fw-bold mb-0">{{ item.title }}</h5>
+                                    <div class="timeline-date">
+                                        <span class="badge bg-{{ item.color }}">
+                                            {{ item.date.strftime('%Y-%m') }}
+                                        </span>
+                                        {% if item.is_milestone %}
+                                        <span class="badge bg-warning ms-1">
+                                            <i class="fas fa-star"></i>
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <p class="card-text text-muted">
+                                    {{ item.description }}
+                                </p>
+                                
+                                <div class="timeline-meta">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        {{ item.date.strftime('%Y年%m月%d日') }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5" data-aos="fade-up">
+                <i class="fas fa-timeline fa-4x text-muted mb-4"></i>
+                <h3>时间线正在构建中</h3>
+                <p class="text-muted">敬请期待我的学习历程分享</p>
+                <a href="{{ url_for('main.blog') }}" class="btn btn-primary">
+                    <i class="fas fa-blog me-1"></i>查看博客文章
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Statistics -->
+    {% if timeline_items %}
+    <div class="row mt-5">
+        <div class="col-12" data-aos="fade-up">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title text-center mb-4">
+                        <i class="fas fa-chart-line me-2"></i>成长统计
+                    </h5>
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-item">
+                                <h3 class="fw-bold text-primary">{{ timeline_items|length }}</h3>
+                                <p class="text-muted mb-0">总事件数</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-item">
+                                <h3 class="fw-bold text-success">{{ timeline_items|selectattr('is_milestone')|list|length }}</h3>
+                                <p class="text-muted mb-0">重要里程碑</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-item">
+                                <h3 class="fw-bold text-warning">
+                                    {% set years = timeline_items|map(attribute='date')|map('strftime', '%Y')|unique|list|length %}
+                                    {{ years }}
+                                </h3>
+                                <p class="text-muted mb-0">学习年数</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-item">
+                                <h3 class="fw-bold text-info">
+                                    {% set latest_year = timeline_items|map(attribute='date')|max|strftime('%Y') %}
+                                    {{ latest_year }}
+                                </h3>
+                                <p class="text-muted mb-0">最新更新</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.timeline {
+    position: relative;
+    padding: 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--bs-primary);
+    transform: translateX(-50%);
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 3rem;
+    display: flex;
+    align-items: center;
+}
+
+.timeline-item:nth-child(odd) {
+    flex-direction: row;
+}
+
+.timeline-item:nth-child(even) {
+    flex-direction: row-reverse;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.timeline-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    border: 3px solid white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.timeline-content {
+    width: calc(50% - 40px);
+    padding: 0 20px;
+}
+
+.timeline-item:nth-child(odd) .timeline-content {
+    margin-right: auto;
+    text-align: right;
+}
+
+.timeline-item:nth-child(even) .timeline-content {
+    margin-left: auto;
+    text-align: left;
+}
+
+.timeline-card {
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.timeline-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+}
+
+.timeline-item.milestone .timeline-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(var(--bs-warning-rgb), 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(var(--bs-warning-rgb), 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(var(--bs-warning-rgb), 0);
+    }
+}
+
+.timeline-date {
+    white-space: nowrap;
+}
+
+.stat-item {
+    padding: 1rem;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .timeline::before {
+        left: 30px;
+    }
+    
+    .timeline-item {
+        flex-direction: row !important;
+        margin-left: 60px;
+    }
+    
+    .timeline-marker {
+        left: 30px;
+    }
+    
+    .timeline-content {
+        width: 100%;
+        text-align: left !important;
+        padding: 0 0 0 20px;
+    }
+    
+    .timeline-item:nth-child(odd) .timeline-content,
+    .timeline-item:nth-child(even) .timeline-content {
+        margin: 0;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 初始化AOS动画
+    AOS.init({
+        duration: 800,
+        once: true,
+        offset: 100
+    });
+    
+    // 时间线项目点击事件
+    $('.timeline-card').on('click', function() {
+        $(this).toggleClass('active');
+    });
+    
+    // 滚动时高亮当前时间线项目
+    $(window).on('scroll', function() {
+        highlightCurrentTimelineItem();
+    });
+    
+    // 添加时间线动画
+    animateTimeline();
+});
+
+function highlightCurrentTimelineItem() {
+    const scrollTop = $(window).scrollTop();
+    const windowHeight = $(window).height();
+    
+    $('.timeline-item').each(function() {
+        const itemTop = $(this).offset().top;
+        const itemHeight = $(this).outerHeight();
+        
+        if (scrollTop + windowHeight / 2 > itemTop && scrollTop < itemTop + itemHeight) {
+            $(this).addClass('active');
+        } else {
+            $(this).removeClass('active');
+        }
+    });
+}
+
+function animateTimeline() {
+    // 为时间线添加渐进式动画
+    $('.timeline-item').each(function(index) {
+        $(this).css('animation-delay', (index * 0.2) + 's');
+    });
+}
+
+// 时间线筛选功能
+function filterTimeline(year) {
+    if (year === 'all') {
+        $('.timeline-item').show();
+    } else {
+        $('.timeline-item').each(function() {
+            const itemYear = $(this).find('.timeline-date .badge').text().split('-')[0];
+            if (itemYear === year) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    }
+}
+
+// 导出时间线数据
+function exportTimeline() {
+    const timelineData = [];
+    $('.timeline-item').each(function() {
+        const title = $(this).find('.card-title').text();
+        const date = $(this).find('.timeline-meta small').text();
+        const description = $(this).find('.card-text').text();
+        
+        timelineData.push({
+            title: title,
+            date: date,
+            description: description
+        });
+    });
+    
+    console.log('Timeline Data:', timelineData);
+    // 这里可以添加导出到文件的逻辑
+}
+</script>
+{% endblock %}

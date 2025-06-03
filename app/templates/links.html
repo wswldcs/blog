@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}友情链接 - {{ config.BLOG_TITLE }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-12 text-center" data-aos="fade-up">
+            <h1 class="display-4 fw-bold">友情链接</h1>
+            <p class="lead text-muted">分享优质网站，互相学习交流</p>
+        </div>
+    </div>
+    
+    <!-- Links Grid -->
+    {% if links %}
+    <div class="row">
+        {% for link in links %}
+        <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="{{ loop.index * 100 }}">
+            <div class="link-card card h-100 shadow-sm hover-lift">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="link-logo me-3">
+                            {% if link.logo %}
+                            <img src="{{ link.logo }}" alt="{{ link.name }}" class="rounded" width="50" height="50">
+                            {% else %}
+                            <div class="default-logo bg-primary text-white rounded d-flex align-items-center justify-content-center" 
+                                 style="width: 50px; height: 50px;">
+                                <i class="fas fa-link"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">{{ link.name }}</h5>
+                            <small class="text-muted">{{ link.url|replace('https://', '')|replace('http://', '') }}</small>
+                        </div>
+                    </div>
+                    
+                    <p class="card-text text-muted flex-grow-1">
+                        {{ link.description or '暂无描述' }}
+                    </p>
+                    
+                    <div class="mt-auto">
+                        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" 
+                           class="btn btn-primary btn-sm w-100" onclick="trackLinkClick('{{ link.name }}')">
+                            <i class="fas fa-external-link-alt me-1"></i>访问网站
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5" data-aos="fade-up">
+        <i class="fas fa-link fa-4x text-muted mb-4"></i>
+        <h3>暂无友情链接</h3>
+        <p class="text-muted">正在寻找优质的合作伙伴</p>
+    </div>
+    {% endif %}
+    
+    <!-- Link Exchange Section -->
+    <section class="link-exchange mt-5 py-5 bg-light rounded" data-aos="fade-up">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h3 class="fw-bold mb-4">
+                        <i class="fas fa-handshake me-2"></i>友链交换
+                    </h3>
+                    <p class="text-muted mb-4">
+                        欢迎与我交换友情链接！如果您有优质的技术博客或网站，
+                        我们可以互相推荐，共同成长。
+                    </p>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="exchange-info">
+                                <h6 class="fw-bold">我的网站信息</h6>
+                                <ul class="list-unstyled text-start">
+                                    <li><strong>网站名称:</strong> {{ config.BLOG_TITLE }}</li>
+                                    <li><strong>网站描述:</strong> {{ config.BLOG_SUBTITLE }}</li>
+                                    <li><strong>网站地址:</strong> {{ request.host_url }}</li>
+                                    <li><strong>站长:</strong> {{ config.AUTHOR_NAME }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="exchange-requirements">
+                                <h6 class="fw-bold">友链要求</h6>
+                                <ul class="list-unstyled text-start">
+                                    <li><i class="fas fa-check text-success me-2"></i>内容健康，无违法信息</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>网站稳定，访问正常</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>原创内容为主</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>技术相关优先</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a href="{{ url_for('main.about') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-envelope me-2"></i>联系我交换友链
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Recommended Sites -->
+    <section class="recommended-sites mt-5" data-aos="fade-up">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h3 class="fw-bold">
+                    <i class="fas fa-star me-2"></i>推荐网站
+                </h3>
+                <p class="text-muted">一些我经常访问的优质网站</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="recommended-card card border-0 bg-light">
+                    <div class="card-body text-center">
+                        <i class="fab fa-github fa-2x text-dark mb-2"></i>
+                        <h6 class="card-title">GitHub</h6>
+                        <p class="card-text small text-muted">全球最大的代码托管平台</p>
+                        <a href="https://github.com" target="_blank" class="btn btn-outline-dark btn-sm">
+                            访问
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="recommended-card card border-0 bg-light">
+                    <div class="card-body text-center">
+                        <i class="fab fa-stack-overflow fa-2x text-warning mb-2"></i>
+                        <h6 class="card-title">Stack Overflow</h6>
+                        <p class="card-text small text-muted">程序员问答社区</p>
+                        <a href="https://stackoverflow.com" target="_blank" class="btn btn-outline-warning btn-sm">
+                            访问
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="recommended-card card border-0 bg-light">
+                    <div class="card-body text-center">
+                        <i class="fab fa-python fa-2x text-primary mb-2"></i>
+                        <h6 class="card-title">Python.org</h6>
+                        <p class="card-text small text-muted">Python官方网站</p>
+                        <a href="https://python.org" target="_blank" class="btn btn-outline-primary btn-sm">
+                            访问
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="recommended-card card border-0 bg-light">
+                    <div class="card-body text-center">
+                        <i class="fab fa-dev fa-2x text-success mb-2"></i>
+                        <h6 class="card-title">Dev.to</h6>
+                        <p class="card-text small text-muted">开发者社区</p>
+                        <a href="https://dev.to" target="_blank" class="btn btn-outline-success btn-sm">
+                            访问
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+}
+
+.link-card {
+    border: none;
+    border-left: 4px solid var(--bs-primary);
+}
+
+.link-card:hover {
+    border-left-color: var(--bs-success);
+}
+
+.default-logo {
+    font-size: 1.2rem;
+}
+
+.exchange-info, .exchange-requirements {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    height: 100%;
+}
+
+.recommended-card {
+    transition: transform 0.3s ease;
+}
+
+.recommended-card:hover {
+    transform: translateY(-3px);
+}
+
+.link-logo img {
+    object-fit: cover;
+}
+
+@media (max-width: 768px) {
+    .exchange-info, .exchange-requirements {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 初始化AOS动画
+    AOS.init({
+        duration: 800,
+        once: true,
+        offset: 100
+    });
+    
+    // 检查链接状态
+    checkLinksStatus();
+    
+    // 添加链接卡片悬停效果
+    $('.link-card').hover(
+        function() {
+            $(this).find('.btn').removeClass('btn-primary').addClass('btn-success');
+        },
+        function() {
+            $(this).find('.btn').removeClass('btn-success').addClass('btn-primary');
+        }
+    );
+});
+
+function trackLinkClick(linkName) {
+    // 统计链接点击
+    console.log(`Clicked link: ${linkName}`);
+    
+    // 这里可以添加统计代码
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'click', {
+            'event_category': 'outbound',
+            'event_label': linkName
+        });
+    }
+}
+
+function checkLinksStatus() {
+    // 检查友链状态（可选功能）
+    $('.link-card').each(function() {
+        const card = $(this);
+        const url = card.find('a').attr('href');
+        
+        // 这里可以添加链接状态检查逻辑
+        // 由于跨域限制，实际实现可能需要后端支持
+    });
+}
+
+// 复制网站信息
+function copyWebsiteInfo() {
+    const info = `网站名称: {{ config.BLOG_TITLE }}
+网站描述: {{ config.BLOG_SUBTITLE }}
+网站地址: {{ request.host_url }}
+站长: {{ config.AUTHOR_NAME }}`;
+    
+    navigator.clipboard.writeText(info).then(function() {
+        alert('网站信息已复制到剪贴板');
+    });
+}
+
+// 申请友链表单（如果需要的话）
+function showLinkApplicationForm() {
+    const formHtml = `
+        <div class="modal fade" id="linkApplicationModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">申请友情链接</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="linkApplicationForm">
+                            <div class="mb-3">
+                                <label class="form-label">网站名称 *</label>
+                                <input type="text" class="form-control" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">网站地址 *</label>
+                                <input type="url" class="form-control" name="url" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">网站描述</label>
+                                <textarea class="form-control" name="description" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">站长邮箱 *</label>
+                                <input type="email" class="form-control" name="email" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" onclick="submitLinkApplication()">提交申请</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    $('body').append(formHtml);
+    $('#linkApplicationModal').modal('show');
+}
+
+function submitLinkApplication() {
+    // 提交友链申请
+    const formData = new FormData($('#linkApplicationForm')[0]);
+    
+    // 这里可以添加提交逻辑
+    alert('友链申请已提交，我会尽快回复您！');
+    $('#linkApplicationModal').modal('hide');
+}
+</script>
+{% endblock %}

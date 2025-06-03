@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if post %}编辑文章{% else %}新建文章{% endif %} - {{ config.BLOG_TITLE }}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">
+                    {% if post %}编辑文章{% else %}新建文章{% endif %}
+                </h1>
+                <a href="{{ url_for('manage.posts') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>返回列表
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Post Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        <!-- Title -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">文章标题 *</label>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   value="{{ post.title if post else '' }}" required>
+                            <div class="invalid-feedback">请输入文章标题</div>
+                        </div>
+                        
+                        <!-- Summary -->
+                        <div class="mb-3">
+                            <label for="summary" class="form-label">文章摘要</label>
+                            <textarea class="form-control" id="summary" name="summary" rows="3" 
+                                      placeholder="简短描述文章内容...">{{ post.summary if post else '' }}</textarea>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="mb-3">
+                            <label for="content" class="form-label">文章内容 * (支持Markdown)</label>
+                            <textarea class="form-control" id="content" name="content" rows="20" 
+                                      placeholder="使用Markdown语法编写文章内容..." required>{{ post.content if post else '' }}</textarea>
+                            <div class="invalid-feedback">请输入文章内容</div>
+                            <div class="form-text">
+                                支持Markdown语法，如 **粗体**、*斜体*、`代码`、```代码块```等
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i>
+                                {% if post %}更新文章{% else %}创建文章{% endif %}
+                            </button>
+                            <a href="{{ url_for('manage.posts') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-1"></i>取消
+                            </a>
+                        </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Post Settings -->
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">文章设置</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Category -->
+                    <div class="mb-3">
+                        <label for="category_id" class="form-label">分类</label>
+                        <select class="form-select" id="category_id" name="category_id">
+                            <option value="">选择分类</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" 
+                                    {% if post and post.category_id == category.id %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Tags -->
+                    <div class="mb-3">
+                        <label class="form-label">标签</label>
+                        <div class="tags-container" style="max-height: 200px; overflow-y: auto;">
+                            {% for tag in tags %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" 
+                                       id="tag_{{ tag.id }}" name="tag_ids" value="{{ tag.id }}"
+                                       {% if post and tag in post.tags %}checked{% endif %}>
+                                <label class="form-check-label" for="tag_{{ tag.id }}">
+                                    {{ tag.name }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   id="is_published" name="is_published"
+                                   {% if post and post.is_published %}checked{% endif %}>
+                            <label class="form-check-label" for="is_published">
+                                发布文章
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Featured -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   id="is_featured" name="is_featured"
+                                   {% if post and post.is_featured %}checked{% endif %}>
+                            <label class="form-check-label" for="is_featured">
+                                设为精选
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Markdown Help -->
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="mb-0">Markdown语法帮助</h6>
+                </div>
+                <div class="card-body">
+                    <div class="markdown-help">
+                        <p><strong>标题:</strong></p>
+                        <code># 一级标题<br>## 二级标题</code>
+                        
+                        <p class="mt-3"><strong>文本样式:</strong></p>
+                        <code>**粗体** *斜体*</code>
+                        
+                        <p class="mt-3"><strong>链接:</strong></p>
+                        <code>[链接文字](URL)</code>
+                        
+                        <p class="mt-3"><strong>图片:</strong></p>
+                        <code>![图片描述](图片URL)</code>
+                        
+                        <p class="mt-3"><strong>代码:</strong></p>
+                        <code>`行内代码`<br>```<br>代码块<br>```</code>
+                        
+                        <p class="mt-3"><strong>列表:</strong></p>
+                        <code>- 无序列表<br>1. 有序列表</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.markdown-help code {
+    display: block;
+    background: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    white-space: pre-line;
+}
+
+.tags-container {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+}
+
+.form-check {
+    margin-bottom: 0.5rem;
+}
+
+#content {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 表单验证
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+
+// 自动保存草稿（可选功能）
+let autoSaveTimer;
+function autoSave() {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => {
+        // 这里可以添加自动保存逻辑
+        console.log('Auto save...');
+    }, 30000); // 30秒后自动保存
+}
+
+document.getElementById('content').addEventListener('input', autoSave);
+document.getElementById('title').addEventListener('input', autoSave);
+</script>
+{% endblock %}
