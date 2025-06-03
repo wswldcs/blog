@@ -40,13 +40,14 @@ class ProductionConfig:
     BLOG_EMAIL = os.environ.get('BLOG_EMAIL') or 'admin@example.com'
     
     # 域名配置
-    BLOG_DOMAIN = os.environ.get('BLOG_DOMAIN') or 'sub.wswldcs.edu.deal'
+    BLOG_DOMAIN = os.environ.get('BLOG_DOMAIN') or 'www.wswldcs.edu.deal'
     BLOG_URL = f'https://{BLOG_DOMAIN}'
 
     # 允许的主机名
     ALLOWED_HOSTS = [
-        'sub.wswldcs.edu.deal',
-        'wswldcs.blog.io',
+        'www.wswldcs.edu.deal',
+        'wswldcs.edu.deal',
+        'wswldcs.blog',
         'localhost',
         '127.0.0.1'
     ]

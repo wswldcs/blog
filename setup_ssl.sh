@@ -12,7 +12,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # 配置变量
-DOMAIN="sub.wswldcs.edu.deal"
+DOMAIN="www.wswldcs.edu.deal"
 EMAIL="admin@wswldcs.edu.deal"  # 请替换为你的邮箱
 WEBROOT="/var/www/certbot"
 

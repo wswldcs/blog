@@ -18,7 +18,7 @@ APP_NAME="aublog"
 APP_DIR="/var/www/$APP_NAME"
 SERVICE_NAME="aublog"
 NGINX_CONF="/etc/nginx/sites-available/$APP_NAME"
-DOMAIN="sub.wswldcs.edu.deal"
+DOMAIN="www.wswldcs.edu.deal"
 
 # 检查是否为root用户
 if [ "$EUID" -ne 0 ]; then
