@@ -42,6 +42,14 @@ class ProductionConfig:
     # 域名配置
     BLOG_DOMAIN = os.environ.get('BLOG_DOMAIN') or 'sub.wswldcs.edu.deal'
     BLOG_URL = f'https://{BLOG_DOMAIN}'
+
+    # 允许的主机名
+    ALLOWED_HOSTS = [
+        'sub.wswldcs.edu.deal',
+        'wswldcs.blog.io',
+        'localhost',
+        '127.0.0.1'
+    ]
     
     # 文件上传配置
     UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'static', 'uploads')

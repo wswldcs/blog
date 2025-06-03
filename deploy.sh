@@ -40,7 +40,7 @@ echo -e "${YELLOW}4. 克隆代码仓库...${NC}"
 if [ -d ".git" ]; then
     git pull origin main
 else
-    git clone https://github.com/YOUR_USERNAME/blog.git .
+    git clone https://github.com/wswldcs/blog.git .
 fi
 
 echo -e "${YELLOW}5. 创建Python虚拟环境...${NC}"
