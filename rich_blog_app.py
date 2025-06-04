@@ -4609,6 +4609,10 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 loadCategories();
             } else if (sectionId === 'profile') {
                 loadProfile();
+            } else if (sectionId === 'projects') {
+                loadProjects();
+            } else if (sectionId === 'timeline') {
+                loadTimeline();
             }
         }
 
@@ -4663,7 +4667,21 @@ ADMIN_DASHBOARD_TEMPLATE = '''
         }
 
         // 显示添加文章表单
-        function showAddPostForm() {
+        async function showAddPostForm() {
+            // 先加载分类数据
+            let categoriesOptions = '<option value="">选择分类</option>';
+            try {
+                const response = await fetch('/api/admin/categories');
+                const data = await response.json();
+                if (data.categories) {
+                    data.categories.forEach(category => {
+                        categoriesOptions += `<option value="${category.id}">${category.name}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('加载分类失败:', error);
+            }
+
             const formHtml = `
                 <div class="modal fade" id="postModal" tabindex="-1">
                     <div class="modal-dialog modal-lg">
@@ -4675,22 +4693,28 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                             <div class="modal-body">
                                 <form id="postForm">
                                     <div class="mb-3">
-                                        <label class="form-label text-light">标题</label>
-                                        <input type="text" class="form-control" name="title" required>
+                                        <label class="form-label text-light">标题 *</label>
+                                        <input type="text" class="form-control" name="title" required
+                                               style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label text-light">摘要</label>
-                                        <textarea class="form-control" name="summary" rows="2"></textarea>
+                                        <textarea class="form-control" name="summary" rows="2"
+                                                  style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                                  placeholder="文章摘要（可选）"></textarea>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label text-light">内容</label>
-                                        <textarea class="form-control" name="content" rows="10" required></textarea>
+                                        <label class="form-label text-light">内容 *</label>
+                                        <textarea class="form-control" name="content" rows="10" required
+                                                  style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                                  placeholder="请输入文章内容..."></textarea>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6">
                                             <label class="form-label text-light">分类</label>
-                                            <select class="form-select" name="category_id">
-                                                <option value="">选择分类</option>
+                                            <select class="form-select" name="category_id"
+                                                    style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                ${categoriesOptions}
                                             </select>
                                         </div>
                                         <div class="col-md-6">
@@ -4732,13 +4756,29 @@ ADMIN_DASHBOARD_TEMPLATE = '''
             const form = document.getElementById('postForm');
             const formData = new FormData(form);
 
+            // 验证必填字段
+            const title = formData.get('title').trim();
+            const content = formData.get('content').trim();
+
+            if (!title) {
+                alert('请输入文章标题');
+                return;
+            }
+
+            if (!content) {
+                alert('请输入文章内容');
+                return;
+            }
+
             const postData = {
-                title: formData.get('title'),
-                summary: formData.get('summary'),
-                content: formData.get('content'),
-                category_id: formData.get('category_id') || null,
+                title: title,
+                summary: formData.get('summary').trim(),
+                content: content,
+                category_id: formData.get('category_id') ? parseInt(formData.get('category_id')) : null,
                 is_published: formData.has('is_published')
             };
+
+            console.log('发送的数据:', postData); // 调试用
 
             try {
                 const response = await fetch('/api/admin/posts', {
@@ -4750,17 +4790,18 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 });
 
                 const result = await response.json();
+                console.log('服务器响应:', result); // 调试用
 
                 if (response.ok) {
                     alert('文章保存成功！');
                     bootstrap.Modal.getInstance(document.getElementById('postModal')).hide();
                     loadPosts(); // 重新加载文章列表
                 } else {
-                    alert('保存失败: ' + result.error);
+                    alert('保存失败: ' + (result.error || '未知错误'));
                 }
             } catch (error) {
                 console.error('保存文章失败:', error);
-                alert('保存文章失败');
+                alert('保存文章失败: ' + error.message);
             }
         }
 
@@ -4864,6 +4905,36 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 loadProfile();
             }
         });
+
+        // 加载项目列表
+        async function loadProjects() {
+            try {
+                const response = await fetch('/api/admin/projects');
+                const data = await response.json();
+
+                if (data.projects) {
+                    console.log('项目数据:', data.projects);
+                    // 这里可以添加项目列表的显示逻辑
+                }
+            } catch (error) {
+                console.error('加载项目失败:', error);
+            }
+        }
+
+        // 加载时间线
+        async function loadTimeline() {
+            try {
+                const response = await fetch('/api/admin/timeline');
+                const data = await response.json();
+
+                if (data.timeline) {
+                    console.log('时间线数据:', data.timeline);
+                    // 这里可以添加时间线列表的显示逻辑
+                }
+            } catch (error) {
+                console.error('加载时间线失败:', error);
+            }
+        }
     </script>
 </body>
 </html>
@@ -4897,32 +4968,60 @@ def api_create_post():
     if not session.get('admin_logged_in'):
         return jsonify({'error': '未授权'}), 401
 
-    data = request.get_json()
+    try:
+        data = request.get_json()
 
-    # 生成slug
-    slug = data['title'].lower().replace(' ', '-').replace('，', '-').replace('。', '')
-    slug = ''.join(c for c in slug if c.isalnum() or c == '-')
+        if not data:
+            return jsonify({'error': '无效的JSON数据'}), 400
 
-    # 检查slug是否已存在
-    existing_post = Post.query.filter_by(slug=slug).first()
-    if existing_post:
-        slug = f"{slug}-{int(time.time())}"
+        # 验证必填字段
+        if not data.get('title'):
+            return jsonify({'error': '标题不能为空'}), 400
 
-    new_post = Post(
-        title=data['title'],
-        slug=slug,
-        content=data['content'],
-        summary=data.get('summary', ''),
-        category_id=data.get('category_id'),
-        is_published=data.get('is_published', False),
-        created_at=datetime.now(),
-        updated_at=datetime.now()
-    )
+        if not data.get('content'):
+            return jsonify({'error': '内容不能为空'}), 400
 
-    db.session.add(new_post)
-    db.session.commit()
+        # 生成slug
+        title = data['title'].strip()
+        slug = title.lower().replace(' ', '-').replace('，', '-').replace('。', '')
+        slug = ''.join(c for c in slug if c.isalnum() or c == '-' or ord(c) > 127)
 
-    return jsonify({'message': '文章创建成功', 'post_id': new_post.id})
+        # 检查slug是否已存在
+        existing_post = Post.query.filter_by(slug=slug).first()
+        if existing_post:
+            slug = f"{slug}-{int(time.time())}"
+
+        # 获取当前用户ID（使用Flask-Login的current_user或者从session获取）
+        if current_user.is_authenticated:
+            user_id = current_user.id
+        else:
+            # 如果Flask-Login没有用户，从数据库获取admin用户
+            admin_user = User.query.filter_by(username='admin').first()
+            if not admin_user:
+                return jsonify({'error': '用户不存在'}), 400
+            user_id = admin_user.id
+
+        new_post = Post(
+            title=title,
+            slug=slug,
+            content=data['content'].strip(),
+            summary=data.get('summary', '').strip(),
+            category_id=data.get('category_id') if data.get('category_id') else None,
+            is_published=data.get('is_published', False),
+            user_id=user_id,
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+
+        db.session.add(new_post)
+        db.session.commit()
+
+        return jsonify({'message': '文章创建成功', 'post_id': new_post.id})
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"创建文章错误: {e}")  # 调试用
+        return jsonify({'error': f'创建文章失败: {str(e)}'}), 500
 
 @app.route('/api/admin/posts/<int:post_id>', methods=['PUT'])
 def api_update_post(post_id):
@@ -5042,7 +5141,7 @@ def api_admin_projects():
             'id': project.id,
             'name': project.name,
             'description': project.description,
-            'technologies': project.technologies,
+            'technologies': project.tech_stack,  # 修复字段名
             'github_url': project.github_url,
             'demo_url': project.demo_url,
             'status': project.status,
@@ -5062,7 +5161,7 @@ def api_create_project():
     new_project = Project(
         name=data['name'],
         description=data.get('description', ''),
-        technologies=data.get('technologies', ''),
+        tech_stack=data.get('technologies', ''),  # 修复字段名
         github_url=data.get('github_url', ''),
         demo_url=data.get('demo_url', ''),
         status=data.get('status', 'planned'),
@@ -5081,7 +5180,7 @@ def api_admin_timeline():
     if not session.get('admin_logged_in'):
         return jsonify({'error': '未授权'}), 401
 
-    timeline_items = TimelineItem.query.order_by(TimelineItem.date.desc()).all()
+    timeline_items = Timeline.query.order_by(Timeline.date.desc()).all()
     timeline_data = []
     for item in timeline_items:
         timeline_data.append({
@@ -5103,7 +5202,7 @@ def api_create_timeline():
 
     data = request.get_json()
 
-    new_item = TimelineItem(
+    new_item = Timeline(
         title=data['title'],
         description=data.get('description', ''),
         date=datetime.strptime(data['date'], '%Y-%m-%d').date(),
