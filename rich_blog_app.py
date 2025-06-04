@@ -4597,22 +4597,519 @@ ADMIN_DASHBOARD_TEMPLATE = '''
 
             // 添加active类到当前链接
             event.target.classList.add('active');
+
+            // 根据section加载相应数据
+            if (sectionId === 'posts') {
+                loadPosts();
+            } else if (sectionId === 'categories') {
+                loadCategories();
+            }
         }
 
+        // 加载文章列表
+        async function loadPosts() {
+            try {
+                const response = await fetch('/api/admin/posts');
+                const data = await response.json();
+
+                if (data.posts) {
+                    const tbody = document.querySelector('#posts .table tbody');
+                    tbody.innerHTML = '';
+
+                    data.posts.forEach(post => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${post.title}</td>
+                            <td>${post.category}</td>
+                            <td><span class="badge ${post.status === '已发布' ? 'bg-success' : 'bg-warning'}">${post.status}</span></td>
+                            <td>${post.created_at}</td>
+                            <td>
+                                <button class="btn btn-cool btn-sm me-1" onclick="editPost(${post.id})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deletePost(${post.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            } catch (error) {
+                console.error('加载文章失败:', error);
+                alert('加载文章失败');
+            }
+        }
+
+        // 加载分类列表
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/admin/categories');
+                const data = await response.json();
+
+                if (data.categories) {
+                    // 这里可以渲染分类列表
+                    console.log('分类数据:', data.categories);
+                }
+            } catch (error) {
+                console.error('加载分类失败:', error);
+            }
+        }
+
+        // 显示添加文章表单
         function showAddPostForm() {
-            // 这里可以显示添加文章的模态框或跳转到编辑页面
-            alert('添加文章功能开发中...');
+            const formHtml = `
+                <div class="modal fade" id="postModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content" style="background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(102, 126, 234, 0.3);">
+                            <div class="modal-header" style="border-bottom: 1px solid rgba(102, 126, 234, 0.3);">
+                                <h5 class="modal-title text-white">添加新文章</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="postForm">
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">标题</label>
+                                        <input type="text" class="form-control" name="title" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">摘要</label>
+                                        <textarea class="form-control" name="summary" rows="2"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">内容</label>
+                                        <textarea class="form-control" name="content" rows="10" required></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label text-light">分类</label>
+                                            <select class="form-select" name="category_id">
+                                                <option value="">选择分类</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check mt-4">
+                                                <input class="form-check-input" type="checkbox" name="is_published" id="isPublished">
+                                                <label class="form-check-label text-light" for="isPublished">
+                                                    立即发布
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer" style="border-top: 1px solid rgba(102, 126, 234, 0.3);">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-cool" onclick="savePost()">保存文章</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 移除已存在的模态框
+            const existingModal = document.getElementById('postModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // 添加新模态框
+            document.body.insertAdjacentHTML('beforeend', formHtml);
+
+            // 显示模态框
+            const modal = new bootstrap.Modal(document.getElementById('postModal'));
+            modal.show();
+        }
+
+        // 保存文章
+        async function savePost() {
+            const form = document.getElementById('postForm');
+            const formData = new FormData(form);
+
+            const postData = {
+                title: formData.get('title'),
+                summary: formData.get('summary'),
+                content: formData.get('content'),
+                category_id: formData.get('category_id') || null,
+                is_published: formData.has('is_published')
+            };
+
+            try {
+                const response = await fetch('/api/admin/posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(postData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('文章保存成功！');
+                    bootstrap.Modal.getInstance(document.getElementById('postModal')).hide();
+                    loadPosts(); // 重新加载文章列表
+                } else {
+                    alert('保存失败: ' + result.error);
+                }
+            } catch (error) {
+                console.error('保存文章失败:', error);
+                alert('保存文章失败');
+            }
+        }
+
+        // 删除文章
+        async function deletePost(postId) {
+            if (!confirm('确定要删除这篇文章吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/posts/${postId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('文章删除成功！');
+                    loadPosts(); // 重新加载文章列表
+                } else {
+                    alert('删除失败: ' + result.error);
+                }
+            } catch (error) {
+                console.error('删除文章失败:', error);
+                alert('删除文章失败');
+            }
+        }
+
+        // 编辑文章
+        function editPost(postId) {
+            alert(`编辑文章功能开发中... (文章ID: ${postId})`);
+        }
+
+        // 加载个人信息
+        async function loadProfile() {
+            try {
+                const response = await fetch('/api/admin/profile');
+                const data = await response.json();
+
+                if (data.profile) {
+                    const profile = data.profile;
+                    const form = document.getElementById('profileForm');
+                    if (form) {
+                        form.querySelector('input[name="name"]').value = profile.name || '';
+                        form.querySelector('input[name="email"]').value = profile.email || '';
+                        form.querySelector('input[name="location"]').value = profile.location || '';
+                        form.querySelector('input[name="github"]').value = profile.github || '';
+                        form.querySelector('textarea[name="bio"]').value = profile.bio || '';
+                    }
+                }
+            } catch (error) {
+                console.error('加载个人信息失败:', error);
+            }
+        }
+
+        // 保存个人信息
+        async function saveProfile() {
+            const form = document.getElementById('profileForm');
+            const formData = new FormData(form);
+
+            const profileData = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                location: formData.get('location'),
+                github: formData.get('github'),
+                bio: formData.get('bio')
+            };
+
+            try {
+                const response = await fetch('/api/admin/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(profileData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('个人信息保存成功！');
+                } else {
+                    alert('保存失败: ' + result.error);
+                }
+            } catch (error) {
+                console.error('保存个人信息失败:', error);
+                alert('保存个人信息失败');
+            }
         }
 
         // 表单提交处理
-        document.getElementById('profileForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('个人信息保存功能开发中...');
+        document.addEventListener('DOMContentLoaded', function() {
+            const profileForm = document.getElementById('profileForm');
+            if (profileForm) {
+                profileForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveProfile();
+                });
+
+                // 页面加载时加载个人信息
+                loadProfile();
+            }
         });
     </script>
 </body>
 </html>
 '''
+
+# ==================== 管理API功能 ====================
+
+# 文章管理API
+@app.route('/api/admin/posts', methods=['GET'])
+def api_admin_posts():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    posts = BlogPost.query.order_by(BlogPost.created_at.desc()).all()
+    posts_data = []
+    for post in posts:
+        posts_data.append({
+            'id': post.id,
+            'title': post.title,
+            'slug': post.slug,
+            'category': post.category.name if post.category else '无分类',
+            'status': '已发布' if post.is_published else '草稿',
+            'created_at': post.created_at.strftime('%Y-%m-%d %H:%M'),
+            'view_count': post.view_count
+        })
+
+    return jsonify({'posts': posts_data})
+
+@app.route('/api/admin/posts', methods=['POST'])
+def api_create_post():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    data = request.get_json()
+
+    # 生成slug
+    slug = data['title'].lower().replace(' ', '-').replace('，', '-').replace('。', '')
+    slug = ''.join(c for c in slug if c.isalnum() or c == '-')
+
+    # 检查slug是否已存在
+    existing_post = BlogPost.query.filter_by(slug=slug).first()
+    if existing_post:
+        slug = f"{slug}-{int(time.time())}"
+
+    new_post = BlogPost(
+        title=data['title'],
+        slug=slug,
+        content=data['content'],
+        summary=data.get('summary', ''),
+        category_id=data.get('category_id'),
+        is_published=data.get('is_published', False),
+        created_at=datetime.now(),
+        updated_at=datetime.now()
+    )
+
+    db.session.add(new_post)
+    db.session.commit()
+
+    return jsonify({'message': '文章创建成功', 'post_id': new_post.id})
+
+@app.route('/api/admin/posts/<int:post_id>', methods=['PUT'])
+def api_update_post(post_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    post = BlogPost.query.get_or_404(post_id)
+    data = request.get_json()
+
+    post.title = data['title']
+    post.content = data['content']
+    post.summary = data.get('summary', '')
+    post.category_id = data.get('category_id')
+    post.is_published = data.get('is_published', False)
+    post.updated_at = datetime.now()
+
+    db.session.commit()
+
+    return jsonify({'message': '文章更新成功'})
+
+@app.route('/api/admin/posts/<int:post_id>', methods=['DELETE'])
+def api_delete_post(post_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    post = BlogPost.query.get_or_404(post_id)
+    db.session.delete(post)
+    db.session.commit()
+
+    return jsonify({'message': '文章删除成功'})
+
+# 分类管理API
+@app.route('/api/admin/categories', methods=['GET'])
+def api_admin_categories():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    categories = Category.query.all()
+    categories_data = []
+    for category in categories:
+        categories_data.append({
+            'id': category.id,
+            'name': category.name,
+            'description': category.description,
+            'color': category.color,
+            'icon': category.icon,
+            'post_count': len(category.posts)
+        })
+
+    return jsonify({'categories': categories_data})
+
+@app.route('/api/admin/categories', methods=['POST'])
+def api_create_category():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    data = request.get_json()
+
+    new_category = Category(
+        name=data['name'],
+        description=data.get('description', ''),
+        color=data.get('color', '#667eea'),
+        icon=data.get('icon', 'fas fa-folder')
+    )
+
+    db.session.add(new_category)
+    db.session.commit()
+
+    return jsonify({'message': '分类创建成功', 'category_id': new_category.id})
+
+# 个人信息管理API
+@app.route('/api/admin/profile', methods=['GET'])
+def api_get_profile():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    # 获取当前个人信息
+    profile_data = {
+        'name': app.config.get('AUTHOR_NAME', ''),
+        'email': app.config.get('AUTHOR_EMAIL', ''),
+        'location': app.config.get('AUTHOR_LOCATION', ''),
+        'github': 'wswldcs',
+        'bio': '用数据讲故事，用分析驱动决策',
+        'blog_title': app.config.get('BLOG_TITLE', ''),
+        'blog_description': app.config.get('BLOG_DESCRIPTION', '')
+    }
+
+    return jsonify({'profile': profile_data})
+
+@app.route('/api/admin/profile', methods=['PUT'])
+def api_update_profile():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    data = request.get_json()
+
+    # 更新配置（注意：这里只是临时更新，重启后会恢复）
+    # 在实际应用中，应该将这些信息保存到数据库或配置文件
+    app.config['AUTHOR_NAME'] = data.get('name', app.config.get('AUTHOR_NAME'))
+    app.config['AUTHOR_EMAIL'] = data.get('email', app.config.get('AUTHOR_EMAIL'))
+    app.config['AUTHOR_LOCATION'] = data.get('location', app.config.get('AUTHOR_LOCATION'))
+    app.config['BLOG_TITLE'] = data.get('blog_title', app.config.get('BLOG_TITLE'))
+    app.config['BLOG_DESCRIPTION'] = data.get('blog_description', app.config.get('BLOG_DESCRIPTION'))
+
+    return jsonify({'message': '个人信息更新成功'})
+
+# 项目管理API
+@app.route('/api/admin/projects', methods=['GET'])
+def api_admin_projects():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    projects = Project.query.all()
+    projects_data = []
+    for project in projects:
+        projects_data.append({
+            'id': project.id,
+            'name': project.name,
+            'description': project.description,
+            'technologies': project.technologies,
+            'github_url': project.github_url,
+            'demo_url': project.demo_url,
+            'status': project.status,
+            'is_featured': project.is_featured,
+            'created_at': project.created_at.strftime('%Y-%m-%d') if project.created_at else ''
+        })
+
+    return jsonify({'projects': projects_data})
+
+@app.route('/api/admin/projects', methods=['POST'])
+def api_create_project():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    data = request.get_json()
+
+    new_project = Project(
+        name=data['name'],
+        description=data.get('description', ''),
+        technologies=data.get('technologies', ''),
+        github_url=data.get('github_url', ''),
+        demo_url=data.get('demo_url', ''),
+        status=data.get('status', 'planned'),
+        is_featured=data.get('is_featured', False),
+        created_at=datetime.now()
+    )
+
+    db.session.add(new_project)
+    db.session.commit()
+
+    return jsonify({'message': '项目创建成功', 'project_id': new_project.id})
+
+# 时间线管理API
+@app.route('/api/admin/timeline', methods=['GET'])
+def api_admin_timeline():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    timeline_items = TimelineItem.query.order_by(TimelineItem.date.desc()).all()
+    timeline_data = []
+    for item in timeline_items:
+        timeline_data.append({
+            'id': item.id,
+            'title': item.title,
+            'description': item.description,
+            'date': item.date.strftime('%Y-%m-%d'),
+            'category': item.category,
+            'color': item.color,
+            'icon': item.icon
+        })
+
+    return jsonify({'timeline': timeline_data})
+
+@app.route('/api/admin/timeline', methods=['POST'])
+def api_create_timeline():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    data = request.get_json()
+
+    new_item = TimelineItem(
+        title=data['title'],
+        description=data.get('description', ''),
+        date=datetime.strptime(data['date'], '%Y-%m-%d').date(),
+        category=data.get('category', 'education'),
+        color=data.get('color', '#667eea'),
+        icon=data.get('icon', 'fas fa-graduation-cap')
+    )
+
+    db.session.add(new_item)
+    db.session.commit()
+
+    return jsonify({'message': '时间线项目创建成功', 'item_id': new_item.id})
 
 if __name__ == '__main__':
     print("="*60)
