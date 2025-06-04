@@ -4681,6 +4681,39 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 </div>
             </div>
         </div>
+
+        <!-- 项目管理 -->
+        <div id="projects" class="admin-section" style="display: none;">
+            <h1 class="text-white mb-4">
+                <i class="fas fa-code me-2"></i>项目管理
+            </h1>
+
+            <div class="admin-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-white mb-0">项目作品集</h5>
+                    <button class="quick-action-btn" onclick="showAddProjectForm()">
+                        <i class="fas fa-plus me-2"></i>添加项目
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>项目名称</th>
+                                <th>技术栈</th>
+                                <th>状态</th>
+                                <th>精选</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectsTableBody">
+                            <!-- 项目数据将通过JavaScript加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -5037,16 +5070,70 @@ ADMIN_DASHBOARD_TEMPLATE = '''
         // 加载项目列表
         async function loadProjects() {
             try {
-                const response = await fetch('/api/admin/projects');
+                const response = await fetch('/api/admin/projects', {
+                    credentials: 'same-origin'
+                });
                 const data = await response.json();
 
                 if (data.projects) {
-                    console.log('项目数据:', data.projects);
-                    // 这里可以添加项目列表的显示逻辑
+                    const tbody = document.getElementById('projectsTableBody');
+                    tbody.innerHTML = '';
+
+                    data.projects.forEach(project => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>
+                                <strong>${project.name}</strong>
+                                <br><small class="text-muted">${project.description}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">${project.technologies || '未设置'}</span>
+                            </td>
+                            <td>
+                                <span class="badge ${getProjectStatusClass(project.status)}">
+                                    ${getProjectStatusName(project.status)}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge ${project.is_featured ? 'bg-warning' : 'bg-secondary'}">
+                                    ${project.is_featured ? '精选' : '普通'}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-cool btn-sm me-1" onclick="editProject(${project.id})" title="编辑项目">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteProject(${project.id})" title="删除项目">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
                 }
             } catch (error) {
                 console.error('加载项目失败:', error);
             }
+        }
+
+        // 获取项目状态样式类
+        function getProjectStatusClass(status) {
+            const statusMap = {
+                'completed': 'bg-success',
+                'in_progress': 'bg-primary',
+                'planned': 'bg-secondary'
+            };
+            return statusMap[status] || 'bg-secondary';
+        }
+
+        // 获取项目状态中文名称
+        function getProjectStatusName(status) {
+            const statusMap = {
+                'completed': '已完成',
+                'in_progress': '进行中',
+                'planned': '计划中'
+            };
+            return statusMap[status] || status;
         }
 
         // 加载时间线
@@ -5555,6 +5642,210 @@ ADMIN_DASHBOARD_TEMPLATE = '''
         function editLink(linkId) {
             alert(`编辑友链功能开发中... (友链ID: ${linkId})`);
         }
+
+        // 编辑文章
+        function editPost(postId) {
+            alert(`编辑文章功能开发中... (文章ID: ${postId})`);
+        }
+
+        // 删除文章
+        async function deletePost(postId) {
+            if (!confirm('确定要删除这篇文章吗？删除后无法恢复！')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/posts/${postId}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('文章删除成功！');
+                    loadPosts(); // 重新加载文章列表
+                } else {
+                    alert('删除失败: ' + result.error);
+                }
+            } catch (error) {
+                console.error('删除文章失败:', error);
+                alert('删除文章失败');
+            }
+        }
+
+        // 显示添加项目表单
+        function showAddProjectForm() {
+            const formHtml = `
+                <div class="modal fade" id="projectModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content" style="background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(102, 126, 234, 0.3);">
+                            <div class="modal-header" style="border-bottom: 1px solid rgba(102, 126, 234, 0.3);">
+                                <h5 class="modal-title text-white">添加项目</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="projectForm">
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">项目名称 *</label>
+                                        <input type="text" class="form-control" name="name" required
+                                               style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                               placeholder="例如：数据分析项目">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">项目描述 *</label>
+                                        <textarea class="form-control" name="description" rows="3" required
+                                                  style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                                  placeholder="详细描述项目功能和特点..."></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">技术栈</label>
+                                        <input type="text" class="form-control" name="technologies"
+                                               style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                               placeholder="Python, Pandas, Matplotlib, SQL">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label text-light">GitHub链接</label>
+                                            <input type="url" class="form-control" name="github_url"
+                                                   style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                                   placeholder="https://github.com/username/project">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-light">演示链接</label>
+                                            <input type="url" class="form-control" name="demo_url"
+                                                   style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                                   placeholder="https://demo.example.com">
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label text-light">项目状态</label>
+                                            <select class="form-select" name="status"
+                                                    style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                <option value="completed">已完成</option>
+                                                <option value="in_progress">进行中</option>
+                                                <option value="planned">计划中</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check mt-4">
+                                                <input class="form-check-input" type="checkbox" name="is_featured" id="isFeatured">
+                                                <label class="form-check-label text-light" for="isFeatured">
+                                                    设为精选项目
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer" style="border-top: 1px solid rgba(102, 126, 234, 0.3);">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-cool" onclick="saveProject()">保存项目</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 移除已存在的模态框
+            const existingModal = document.getElementById('projectModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // 添加新模态框
+            document.body.insertAdjacentHTML('beforeend', formHtml);
+
+            // 显示模态框
+            const modal = new bootstrap.Modal(document.getElementById('projectModal'));
+            modal.show();
+        }
+
+        // 保存项目
+        async function saveProject() {
+            const form = document.getElementById('projectForm');
+            const formData = new FormData(form);
+
+            // 验证必填字段
+            const name = formData.get('name').trim();
+            const description = formData.get('description').trim();
+
+            if (!name) {
+                alert('请输入项目名称');
+                return;
+            }
+
+            if (!description) {
+                alert('请输入项目描述');
+                return;
+            }
+
+            const projectData = {
+                name: name,
+                description: description,
+                technologies: formData.get('technologies').trim(),
+                github_url: formData.get('github_url').trim(),
+                demo_url: formData.get('demo_url').trim(),
+                status: formData.get('status'),
+                is_featured: formData.has('is_featured')
+            };
+
+            try {
+                const response = await fetch('/api/admin/projects', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(projectData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('项目保存成功！');
+                    bootstrap.Modal.getInstance(document.getElementById('projectModal')).hide();
+                    loadProjects(); // 重新加载项目列表
+                } else {
+                    alert('保存失败: ' + (result.error || '未知错误'));
+                }
+            } catch (error) {
+                console.error('保存项目失败:', error);
+                alert('保存项目失败: ' + error.message);
+            }
+        }
+
+        // 编辑项目
+        function editProject(projectId) {
+            alert(`编辑项目功能开发中... (项目ID: ${projectId})`);
+        }
+
+        // 删除项目
+        async function deleteProject(projectId) {
+            if (!confirm('确定要删除这个项目吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/projects/${projectId}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('项目删除成功！');
+                    loadProjects(); // 重新加载项目列表
+                } else {
+                    alert('删除失败: ' + result.error);
+                }
+            } catch (error) {
+                console.error('删除项目失败:', error);
+                alert('删除项目失败');
+            }
+        }
     </script>
 </body>
 </html>
@@ -5793,6 +6084,17 @@ def api_create_project():
     db.session.commit()
 
     return jsonify({'message': '项目创建成功', 'project_id': new_project.id})
+
+@app.route('/api/admin/projects/<int:project_id>', methods=['DELETE'])
+def api_delete_project(project_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    project = Project.query.get_or_404(project_id)
+    db.session.delete(project)
+    db.session.commit()
+
+    return jsonify({'message': '项目删除成功'})
 
 # 时间线管理API
 @app.route('/api/admin/timeline', methods=['GET'])
