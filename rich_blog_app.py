@@ -814,7 +814,7 @@ def logout():
 
 @app.route('/health')
 def health():
-    return {'status': 'ok', 'app': 'rich_blog_app.py', 'features': 'complete'}
+    return {'status': 'ok', 'app': 'rich_blog_app.py', 'features': 'complete', 'version': '2.0', 'timestamp': datetime.now().isoformat()}
 
 # 模板定义
 INDEX_TEMPLATE = '''
