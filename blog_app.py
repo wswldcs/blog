@@ -74,7 +74,7 @@ class Post(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 def init_database(app):
     """初始化数据库"""
@@ -295,10 +295,144 @@ def create_routes(app):
     def logout():
         logout_user()
         return redirect(url_for('index'))
-    
+
+    @app.route('/new_post', methods=['GET', 'POST'])
+    @login_required
+    def new_post():
+        if request.method == 'POST':
+            title = request.form['title']
+            content = request.form['content']
+            slug = request.form['slug']
+            is_published = 'is_published' in request.form
+
+            post = Post(title=title, content=content, slug=slug, is_published=is_published)
+            db.session.add(post)
+            db.session.commit()
+            flash('文章创建成功！')
+            return redirect(url_for('admin'))
+
+        return render_template_string('''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>新建文章 - {{ config.BLOG_TITLE }}</title>
+            <meta charset="utf-8">
+            <style>
+                body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+                .form-group { margin-bottom: 15px; }
+                label { display: block; margin-bottom: 5px; font-weight: bold; }
+                input[type="text"], textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+                textarea { height: 200px; resize: vertical; }
+                button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+                .checkbox { width: auto; margin-right: 5px; }
+                .alert { color: green; margin-bottom: 15px; }
+            </style>
+        </head>
+        <body>
+            <h1>新建文章</h1>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <form method="post">
+                <div class="form-group">
+                    <label>标题:</label>
+                    <input type="text" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label>URL别名:</label>
+                    <input type="text" name="slug" required>
+                </div>
+                <div class="form-group">
+                    <label>内容:</label>
+                    <textarea name="content" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="is_published" class="checkbox"> 立即发布
+                    </label>
+                </div>
+                <button type="submit">创建文章</button>
+                <a href="{{ url_for('admin') }}" style="margin-left: 10px;">返回管理</a>
+            </form>
+        </body>
+        </html>
+        ''')
+
+    @app.route('/edit_post/<int:id>', methods=['GET', 'POST'])
+    @login_required
+    def edit_post(id):
+        post = db.session.get(Post, id)
+        if not post:
+            flash('文章不存在')
+            return redirect(url_for('admin'))
+
+        if request.method == 'POST':
+            post.title = request.form['title']
+            post.content = request.form['content']
+            post.slug = request.form['slug']
+            post.is_published = 'is_published' in request.form
+            db.session.commit()
+            flash('文章更新成功！')
+            return redirect(url_for('admin'))
+
+        return render_template_string('''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>编辑文章 - {{ config.BLOG_TITLE }}</title>
+            <meta charset="utf-8">
+            <style>
+                body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+                .form-group { margin-bottom: 15px; }
+                label { display: block; margin-bottom: 5px; font-weight: bold; }
+                input[type="text"], textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+                textarea { height: 200px; resize: vertical; }
+                button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+                .checkbox { width: auto; margin-right: 5px; }
+                .alert { color: green; margin-bottom: 15px; }
+            </style>
+        </head>
+        <body>
+            <h1>编辑文章</h1>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <form method="post">
+                <div class="form-group">
+                    <label>标题:</label>
+                    <input type="text" name="title" value="{{ post.title }}" required>
+                </div>
+                <div class="form-group">
+                    <label>URL别名:</label>
+                    <input type="text" name="slug" value="{{ post.slug }}" required>
+                </div>
+                <div class="form-group">
+                    <label>内容:</label>
+                    <textarea name="content" required>{{ post.content }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="is_published" class="checkbox" {{ 'checked' if post.is_published else '' }}> 发布状态
+                    </label>
+                </div>
+                <button type="submit">更新文章</button>
+                <a href="{{ url_for('admin') }}" style="margin-left: 10px;">返回管理</a>
+            </form>
+        </body>
+        </html>
+        ''', post=post)
+
     @app.route('/health')
     def health():
-        return {'status': 'ok', 'app': 'blog_app.py', 'database': 'connected' if database_url else 'sqlite'}
+        return {'status': 'ok', 'app': 'blog_app.py', 'database': 'connected' if os.environ.get('DATABASE_URL') else 'sqlite'}
 
 # 创建应用
 app = create_blog_app()
