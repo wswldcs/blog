@@ -5134,8 +5134,167 @@ ADMIN_DASHBOARD_TEMPLATE = '''
         }
 
         // 编辑文章
-        function editPost(postId) {
-            alert(`编辑文章功能开发中... (文章ID: ${postId})`);
+        async function editPost(postId) {
+            try {
+                // 获取文章详情
+                const response = await fetch(`/api/admin/posts/${postId}`, {
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    alert('获取文章信息失败');
+                    return;
+                }
+
+                const data = await response.json();
+                const post = data.post;
+
+                // 加载分类数据
+                let categoriesOptions = '<option value="">选择分类</option>';
+                try {
+                    const categoriesResponse = await fetch('/api/admin/categories', {
+                        credentials: 'same-origin'
+                    });
+
+                    if (categoriesResponse.ok) {
+                        const categoriesData = await categoriesResponse.json();
+                        if (categoriesData.categories) {
+                            categoriesData.categories.forEach(category => {
+                                const selected = category.id === post.category_id ? 'selected' : '';
+                                categoriesOptions += `<option value="${category.id}" ${selected}>${category.name}</option>`;
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error('加载分类失败:', error);
+                }
+
+                const formHtml = `
+                    <div class="modal fade" id="editPostModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content" style="background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(102, 126, 234, 0.3);">
+                                <div class="modal-header" style="border-bottom: 1px solid rgba(102, 126, 234, 0.3);">
+                                    <h5 class="modal-title text-white">编辑文章</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="editPostForm">
+                                        <input type="hidden" name="post_id" value="${post.id}">
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">标题 *</label>
+                                            <input type="text" class="form-control" name="title" required value="${post.title}"
+                                                   style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">摘要</label>
+                                            <textarea class="form-control" name="summary" rows="2"
+                                                      style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                                      placeholder="文章摘要（可选）">${post.summary || ''}</textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">内容 *</label>
+                                            <textarea class="form-control" name="content" rows="10" required
+                                                      style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                                      placeholder="请输入文章内容...">${post.content}</textarea>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="form-label text-light">分类</label>
+                                                <select class="form-select" name="category_id"
+                                                        style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                    ${categoriesOptions}
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check mt-4">
+                                                    <input class="form-check-input" type="checkbox" name="is_published" id="editIsPublished" ${post.is_published ? 'checked' : ''}>
+                                                    <label class="form-check-label text-light" for="editIsPublished">
+                                                        已发布
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer" style="border-top: 1px solid rgba(102, 126, 234, 0.3);">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                    <button type="button" class="btn btn-cool" onclick="updatePost()">更新文章</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // 移除已存在的模态框
+                const existingModal = document.getElementById('editPostModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+
+                // 添加新模态框
+                document.body.insertAdjacentHTML('beforeend', formHtml);
+
+                // 显示模态框
+                const modal = new bootstrap.Modal(document.getElementById('editPostModal'));
+                modal.show();
+
+            } catch (error) {
+                console.error('编辑文章失败:', error);
+                alert('编辑文章失败: ' + error.message);
+            }
+        }
+
+        // 更新文章
+        async function updatePost() {
+            const form = document.getElementById('editPostForm');
+            const formData = new FormData(form);
+
+            // 验证必填字段
+            const title = formData.get('title').trim();
+            const content = formData.get('content').trim();
+            const postId = formData.get('post_id');
+
+            if (!title) {
+                alert('请输入文章标题');
+                return;
+            }
+
+            if (!content) {
+                alert('请输入文章内容');
+                return;
+            }
+
+            const postData = {
+                title: title,
+                summary: formData.get('summary').trim(),
+                content: content,
+                category_id: formData.get('category_id') ? parseInt(formData.get('category_id')) : null,
+                is_published: formData.has('is_published')
+            };
+
+            try {
+                const response = await fetch(`/api/admin/posts/${postId}`, {
+                    method: 'PUT',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(postData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('文章更新成功！');
+                    bootstrap.Modal.getInstance(document.getElementById('editPostModal')).hide();
+                    loadPosts(); // 重新加载文章列表
+                } else {
+                    alert('更新失败: ' + (result.error || '未知错误'));
+                }
+            } catch (error) {
+                console.error('更新文章失败:', error);
+                alert('更新文章失败: ' + error.message);
+            }
         }
 
         // 加载个人信息
@@ -5784,8 +5943,198 @@ ADMIN_DASHBOARD_TEMPLATE = '''
         }
 
         // 编辑友链
-        function editLink(linkId) {
-            alert(`编辑友链功能开发中... (友链ID: ${linkId})`);
+        async function editLink(linkId) {
+            try {
+                // 获取友链详情
+                const response = await fetch(`/api/admin/links/${linkId}`, {
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    alert('获取友链信息失败');
+                    return;
+                }
+
+                const data = await response.json();
+                const link = data.link;
+
+                const formHtml = `
+                    <div class="modal fade" id="editLinkModal" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content" style="background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(102, 126, 234, 0.3);">
+                                <div class="modal-header" style="border-bottom: 1px solid rgba(102, 126, 234, 0.3);">
+                                    <h5 class="modal-title text-white">编辑友情链接</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="editLinkForm">
+                                        <input type="hidden" name="link_id" value="${link.id}">
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">网站名称 *</label>
+                                            <input type="text" class="form-control" name="name" required value="${link.name}"
+                                                   style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">网站链接 *</label>
+                                            <input type="url" class="form-control" name="url" required value="${link.url}"
+                                                   style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">网站描述</label>
+                                            <textarea class="form-control" name="description" rows="2"
+                                                      style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">${link.description || ''}</textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">头像</label>
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <input type="url" class="form-control" name="avatar" id="editAvatarUrl" value="${link.avatar || ''}"
+                                                           style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <input type="file" class="form-control" id="editAvatarFile" accept="image/*"
+                                                           style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="form-label text-light">分类</label>
+                                                <select class="form-select" name="category"
+                                                        style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                    <option value="friend" ${link.category === 'friend' ? 'selected' : ''}>朋友</option>
+                                                    <option value="recommend" ${link.category === 'recommend' ? 'selected' : ''}>推荐</option>
+                                                    <option value="tool" ${link.category === 'tool' ? 'selected' : ''}>工具</option>
+                                                    <option value="blog" ${link.category === 'blog' ? 'selected' : ''}>博客</option>
+                                                    <option value="resource" ${link.category === 'resource' ? 'selected' : ''}>资源</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label text-light">排序权重</label>
+                                                <input type="number" class="form-control" name="sort_order" value="${link.sort_order || 0}"
+                                                       style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                            </div>
+                                        </div>
+                                        <div class="form-check mt-3">
+                                            <input class="form-check-input" type="checkbox" name="is_active" id="editIsActive" ${link.is_active ? 'checked' : ''}>
+                                            <label class="form-check-label text-light" for="editIsActive">
+                                                启用链接
+                                            </label>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer" style="border-top: 1px solid rgba(102, 126, 234, 0.3);">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                    <button type="button" class="btn btn-cool" onclick="updateLink()">更新友链</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // 移除已存在的模态框
+                const existingModal = document.getElementById('editLinkModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+
+                // 添加新模态框
+                document.body.insertAdjacentHTML('beforeend', formHtml);
+
+                // 显示模态框
+                const modal = new bootstrap.Modal(document.getElementById('editLinkModal'));
+                modal.show();
+
+            } catch (error) {
+                console.error('编辑友链失败:', error);
+                alert('编辑友链失败: ' + error.message);
+            }
+        }
+
+        // 更新友链
+        async function updateLink() {
+            const form = document.getElementById('editLinkForm');
+            const formData = new FormData(form);
+
+            // 验证必填字段
+            const name = formData.get('name').trim();
+            const url = formData.get('url').trim();
+            const linkId = formData.get('link_id');
+
+            if (!name) {
+                alert('请输入网站名称');
+                return;
+            }
+
+            if (!url) {
+                alert('请输入网站链接');
+                return;
+            }
+
+            let avatarUrl = formData.get('avatar').trim();
+
+            // 检查是否有上传的文件
+            const avatarFile = document.getElementById('editAvatarFile').files[0];
+            if (avatarFile) {
+                try {
+                    // 上传文件
+                    const uploadFormData = new FormData();
+                    uploadFormData.append('file', avatarFile);
+
+                    const uploadResponse = await fetch('/api/admin/upload', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        body: uploadFormData
+                    });
+
+                    const uploadResult = await uploadResponse.json();
+
+                    if (uploadResponse.ok) {
+                        avatarUrl = uploadResult.file_url;
+                    } else {
+                        alert('头像上传失败: ' + uploadResult.error);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('头像上传失败:', error);
+                    alert('头像上传失败: ' + error.message);
+                    return;
+                }
+            }
+
+            const linkData = {
+                name: name,
+                url: url,
+                description: formData.get('description').trim(),
+                avatar: avatarUrl,
+                category: formData.get('category'),
+                sort_order: parseInt(formData.get('sort_order')) || 0,
+                is_active: formData.has('is_active')
+            };
+
+            try {
+                const response = await fetch(`/api/admin/links/${linkId}`, {
+                    method: 'PUT',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(linkData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('友链更新成功！');
+                    bootstrap.Modal.getInstance(document.getElementById('editLinkModal')).hide();
+                    loadLinks(); // 重新加载友链列表
+                } else {
+                    alert('更新失败: ' + (result.error || '未知错误'));
+                }
+            } catch (error) {
+                console.error('更新友链失败:', error);
+                alert('更新友链失败: ' + error.message);
+            }
         }
 
         // 编辑文章
@@ -5962,8 +6311,161 @@ ADMIN_DASHBOARD_TEMPLATE = '''
         }
 
         // 编辑项目
-        function editProject(projectId) {
-            alert(`编辑项目功能开发中... (项目ID: ${projectId})`);
+        async function editProject(projectId) {
+            try {
+                // 获取项目详情
+                const response = await fetch(`/api/admin/projects/${projectId}`, {
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    alert('获取项目信息失败');
+                    return;
+                }
+
+                const data = await response.json();
+                const project = data.project;
+
+                const formHtml = `
+                    <div class="modal fade" id="editProjectModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content" style="background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(102, 126, 234, 0.3);">
+                                <div class="modal-header" style="border-bottom: 1px solid rgba(102, 126, 234, 0.3);">
+                                    <h5 class="modal-title text-white">编辑项目</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="editProjectForm">
+                                        <input type="hidden" name="project_id" value="${project.id}">
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">项目名称 *</label>
+                                            <input type="text" class="form-control" name="name" required value="${project.name}"
+                                                   style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">项目描述 *</label>
+                                            <textarea class="form-control" name="description" rows="3" required
+                                                      style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">${project.description}</textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">技术栈</label>
+                                            <input type="text" class="form-control" name="technologies" value="${project.technologies || ''}"
+                                                   style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="form-label text-light">GitHub链接</label>
+                                                <input type="url" class="form-control" name="github_url" value="${project.github_url || ''}"
+                                                       style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label text-light">演示链接</label>
+                                                <input type="url" class="form-control" name="demo_url" value="${project.demo_url || ''}"
+                                                       style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                            </div>
+                                        </div>
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label text-light">项目状态</label>
+                                                <select class="form-select" name="status"
+                                                        style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                    <option value="completed" ${project.status === 'completed' ? 'selected' : ''}>已完成</option>
+                                                    <option value="in_progress" ${project.status === 'in_progress' ? 'selected' : ''}>进行中</option>
+                                                    <option value="planned" ${project.status === 'planned' ? 'selected' : ''}>计划中</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check mt-4">
+                                                    <input class="form-check-input" type="checkbox" name="is_featured" id="editIsFeatured" ${project.is_featured ? 'checked' : ''}>
+                                                    <label class="form-check-label text-light" for="editIsFeatured">
+                                                        设为精选项目
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer" style="border-top: 1px solid rgba(102, 126, 234, 0.3);">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                    <button type="button" class="btn btn-cool" onclick="updateProject()">更新项目</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // 移除已存在的模态框
+                const existingModal = document.getElementById('editProjectModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+
+                // 添加新模态框
+                document.body.insertAdjacentHTML('beforeend', formHtml);
+
+                // 显示模态框
+                const modal = new bootstrap.Modal(document.getElementById('editProjectModal'));
+                modal.show();
+
+            } catch (error) {
+                console.error('编辑项目失败:', error);
+                alert('编辑项目失败: ' + error.message);
+            }
+        }
+
+        // 更新项目
+        async function updateProject() {
+            const form = document.getElementById('editProjectForm');
+            const formData = new FormData(form);
+
+            // 验证必填字段
+            const name = formData.get('name').trim();
+            const description = formData.get('description').trim();
+            const projectId = formData.get('project_id');
+
+            if (!name) {
+                alert('请输入项目名称');
+                return;
+            }
+
+            if (!description) {
+                alert('请输入项目描述');
+                return;
+            }
+
+            const projectData = {
+                name: name,
+                description: description,
+                technologies: formData.get('technologies').trim(),
+                github_url: formData.get('github_url').trim(),
+                demo_url: formData.get('demo_url').trim(),
+                status: formData.get('status'),
+                is_featured: formData.has('is_featured')
+            };
+
+            try {
+                const response = await fetch(`/api/admin/projects/${projectId}`, {
+                    method: 'PUT',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(projectData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('项目更新成功！');
+                    bootstrap.Modal.getInstance(document.getElementById('editProjectModal')).hide();
+                    loadProjects(); // 重新加载项目列表
+                } else {
+                    alert('更新失败: ' + (result.error || '未知错误'));
+                }
+            } catch (error) {
+                console.error('更新项目失败:', error);
+                alert('更新项目失败: ' + error.message);
+            }
         }
 
         // 删除项目
@@ -6199,6 +6701,28 @@ def api_admin_posts():
 
     return jsonify({'posts': posts_data})
 
+@app.route('/api/admin/posts/<int:post_id>', methods=['GET'])
+def api_get_post(post_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    post = Post.query.get_or_404(post_id)
+    post_data = {
+        'id': post.id,
+        'title': post.title,
+        'slug': post.slug,
+        'content': post.content,
+        'summary': post.summary,
+        'category_id': post.category_id,
+        'is_published': post.is_published,
+        'is_featured': post.is_featured,
+        'created_at': post.created_at.strftime('%Y-%m-%d %H:%M'),
+        'updated_at': post.updated_at.strftime('%Y-%m-%d %H:%M'),
+        'view_count': post.view_count
+    }
+
+    return jsonify({'post': post_data})
+
 @app.route('/api/admin/posts', methods=['POST'])
 def api_create_post():
     if not session.get('admin_logged_in'):
@@ -6404,6 +6928,26 @@ def api_admin_projects():
 
     return jsonify({'projects': projects_data})
 
+@app.route('/api/admin/projects/<int:project_id>', methods=['GET'])
+def api_get_project(project_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    project = Project.query.get_or_404(project_id)
+    project_data = {
+        'id': project.id,
+        'name': project.name,
+        'description': project.description,
+        'technologies': project.tech_stack,
+        'github_url': project.github_url,
+        'demo_url': project.demo_url,
+        'status': project.status,
+        'is_featured': project.is_featured,
+        'created_at': project.created_at.strftime('%Y-%m-%d') if project.created_at else ''
+    }
+
+    return jsonify({'project': project_data})
+
 @app.route('/api/admin/projects', methods=['POST'])
 def api_create_project():
     if not session.get('admin_logged_in'):
@@ -6426,6 +6970,27 @@ def api_create_project():
     db.session.commit()
 
     return jsonify({'message': '项目创建成功', 'project_id': new_project.id})
+
+@app.route('/api/admin/projects/<int:project_id>', methods=['PUT'])
+def api_update_project(project_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    project = Project.query.get_or_404(project_id)
+    data = request.get_json()
+
+    # 更新项目信息
+    project.name = data.get('name', project.name)
+    project.description = data.get('description', project.description)
+    project.tech_stack = data.get('technologies', project.tech_stack)
+    project.github_url = data.get('github_url', project.github_url)
+    project.demo_url = data.get('demo_url', project.demo_url)
+    project.status = data.get('status', project.status)
+    project.is_featured = data.get('is_featured', project.is_featured)
+
+    db.session.commit()
+
+    return jsonify({'message': '项目更新成功', 'project_id': project.id})
 
 @app.route('/api/admin/projects/<int:project_id>', methods=['DELETE'])
 def api_delete_project(project_id):
@@ -6513,6 +7078,26 @@ def api_admin_links():
         })
 
     return jsonify({'links': links_data})
+
+@app.route('/api/admin/links/<int:link_id>', methods=['GET'])
+def api_get_link(link_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    link = Link.query.get_or_404(link_id)
+    link_data = {
+        'id': link.id,
+        'name': link.name,
+        'url': link.url,
+        'description': link.description,
+        'avatar': link.avatar,
+        'category': link.category,
+        'is_active': link.is_active,
+        'sort_order': link.sort_order,
+        'created_at': link.created_at.strftime('%Y-%m-%d') if link.created_at else ''
+    }
+
+    return jsonify({'link': link_data})
 
 @app.route('/api/admin/links', methods=['POST'])
 def api_create_link():
