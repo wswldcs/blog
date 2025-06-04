@@ -135,39 +135,149 @@ def create_routes(app):
             <title>{{ config.BLOG_TITLE }}</title>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
             <style>
-                body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
-                .header { text-align: center; margin-bottom: 40px; padding: 20px; background: #f8f9fa; border-radius: 10px; }
-                .post { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
-                .post-title { color: #333; margin-bottom: 10px; }
-                .post-meta { color: #666; font-size: 14px; margin-bottom: 15px; }
-                .post-content { color: #444; }
-                .admin-link { position: fixed; top: 20px; right: 20px; background: #007bff; color: white; padding: 10px; border-radius: 5px; text-decoration: none; }
-                .no-posts { text-align: center; color: #666; margin: 40px 0; }
+                body {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    min-height: 100vh;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                }
+                .main-container {
+                    background: rgba(255, 255, 255, 0.95);
+                    backdrop-filter: blur(10px);
+                    border-radius: 20px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                    margin: 20px auto;
+                    max-width: 900px;
+                    overflow: hidden;
+                }
+                .header {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    text-align: center;
+                    padding: 60px 20px;
+                    position: relative;
+                }
+                .header h1 {
+                    font-size: 3rem;
+                    font-weight: 300;
+                    margin-bottom: 10px;
+                    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                }
+                .header p {
+                    font-size: 1.2rem;
+                    opacity: 0.9;
+                    margin: 0;
+                }
+                .post-card {
+                    background: white;
+                    border-radius: 15px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                    margin: 30px;
+                    overflow: hidden;
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                }
+                .post-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+                }
+                .post-title {
+                    color: #333;
+                    font-size: 1.8rem;
+                    font-weight: 600;
+                    margin-bottom: 15px;
+                    padding: 0 30px;
+                    padding-top: 30px;
+                }
+                .post-meta {
+                    color: #666;
+                    font-size: 0.9rem;
+                    margin-bottom: 20px;
+                    padding: 0 30px;
+                    display: flex;
+                    align-items: center;
+                }
+                .post-meta i {
+                    margin-right: 8px;
+                    color: #667eea;
+                }
+                .post-content {
+                    color: #555;
+                    line-height: 1.8;
+                    padding: 0 30px 30px;
+                }
+                .admin-btn {
+                    position: fixed;
+                    top: 30px;
+                    right: 30px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 15px 25px;
+                    border-radius: 50px;
+                    text-decoration: none;
+                    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+                    transition: all 0.3s ease;
+                    font-weight: 500;
+                    z-index: 1000;
+                }
+                .admin-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.6);
+                    color: white;
+                    text-decoration: none;
+                }
+                .admin-btn i {
+                    margin-right: 8px;
+                }
+                .no-posts {
+                    text-align: center;
+                    padding: 80px 20px;
+                    color: #666;
+                }
+                .no-posts i {
+                    font-size: 4rem;
+                    color: #ddd;
+                    margin-bottom: 20px;
+                }
+                .no-posts h3 {
+                    color: #333;
+                    margin-bottom: 15px;
+                }
             </style>
         </head>
         <body>
             <div class="header">
-                <h1>{{ config.BLOG_TITLE }}</h1>
+                <h1><i class="fas fa-blog"></i> {{ config.BLOG_TITLE }}</h1>
                 <p>{{ config.BLOG_SUBTITLE }}</p>
             </div>
-            
-            {% if posts %}
-                {% for post in posts %}
-                <article class="post">
-                    <h2 class="post-title">{{ post.title }}</h2>
-                    <div class="post-meta">发布于 {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
-                    <div class="post-content">{{ post.content|safe }}</div>
-                </article>
-                {% endfor %}
-            {% else %}
-                <div class="no-posts">
-                    <h3>暂无文章</h3>
-                    <p>请登录管理后台添加文章</p>
-                </div>
-            {% endif %}
-            
-            <a href="{{ url_for('login') }}" class="admin-link">管理后台</a>
+
+            <div class="main-container">
+                {% if posts %}
+                    {% for post in posts %}
+                    <article class="post-card">
+                        <h2 class="post-title">{{ post.title }}</h2>
+                        <div class="post-meta">
+                            <i class="fas fa-calendar-alt"></i>
+                            发布于 {{ post.created_at.strftime('%Y年%m月%d日 %H:%M') }}
+                        </div>
+                        <div class="post-content">{{ post.content|safe }}</div>
+                    </article>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-posts">
+                        <i class="fas fa-edit"></i>
+                        <h3>暂无文章</h3>
+                        <p>请登录管理后台添加你的第一篇文章</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <a href="{{ url_for('login') }}" class="admin-btn">
+                <i class="fas fa-cog"></i>管理后台
+            </a>
+
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         </body>
         </html>
         ''', posts=posts)
