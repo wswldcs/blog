@@ -1,1 +1,1 @@
-web: python full_blog_app.py
+web: python rich_blog_app.py
