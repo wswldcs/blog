@@ -2660,22 +2660,22 @@ BLOG_TEMPLATE = '''
             <h1 class="page-title fade-in-up">📝 学习笔记</h1>
 
             <!-- 搜索和筛选 -->
-            <div class="row mb-5 fade-in-up">
-                <div class="col-md-8">
+            <div class="row mb-5 fade-in-up justify-content-center">
+                <div class="col-md-6">
                     <form method="GET" class="d-flex">
-                        <input type="text" name="search" class="form-control me-3"
-                               placeholder="🔍 搜索我的学习笔记..."
+                        <input type="text" name="search" class="form-control me-2"
+                               placeholder="🔍 搜索学习笔记..."
                                value="{{ search_query or '' }}"
-                               style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white; border-radius: 25px; padding: 0.75rem 1.5rem;">
-                        <button type="submit" class="btn btn-cool">
-                            <i class="fas fa-search me-2"></i>搜索
+                               style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white; border-radius: 20px; padding: 0.6rem 1.2rem; font-size: 0.9rem;">
+                        <button type="submit" class="btn btn-cool btn-sm">
+                            <i class="fas fa-search"></i>
                         </button>
                     </form>
                 </div>
-                <div class="col-md-4">
-                    <select class="form-select"
+                <div class="col-md-3">
+                    <select class="form-select form-select-sm"
                             onchange="location.href='{{ url_for('blog') }}?category=' + this.value"
-                            style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white; border-radius: 25px; padding: 0.75rem 1.5rem;">
+                            style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white; border-radius: 20px; padding: 0.6rem 1.2rem; font-size: 0.9rem;">
                         <option value="">📚 所有分类</option>
                         {% for category in categories %}
                         <option value="{{ category.id }}" {% if current_category == category.id %}selected{% endif %}>
@@ -3978,47 +3978,187 @@ LOGIN_TEMPLATE = '''
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>管理登录 - {{ config.BLOG_TITLE }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    ''' + BASE_STYLES + '''
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: 'Inter', sans-serif;
         }
+
         .login-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 25px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
             padding: 3rem;
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .login-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            margin: 0 auto 2rem;
+            box-shadow: var(--shadow-glow);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .form-control {
+            background: rgba(15, 23, 42, 0.8) !important;
+            border: 1px solid rgba(102, 126, 234, 0.3) !important;
+            border-radius: 15px !important;
+            color: white !important;
+            padding: 0.8rem 1.2rem !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .form-control:focus {
+            background: rgba(15, 23, 42, 0.9) !important;
+            border-color: rgba(102, 126, 234, 0.6) !important;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3) !important;
+            color: white !important;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        .form-label {
+            color: #e0e7ff;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-btn {
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 15px;
+            padding: 0.8rem 2rem;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+            color: white;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.5s ease;
+        }
+
+        .login-btn:hover::before {
+            left: 100%;
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.2) !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+            color: #fca5a5 !important;
+            border-radius: 15px !important;
+        }
+
+        .back-link {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: #667eea;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <h2 class="text-center mb-4">管理员登录</h2>
+    ''' + BASE_JAVASCRIPT + '''
+
+    <div class="login-card fade-in-up">
+        <div class="login-icon">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+
+        <h2 class="text-center mb-1 text-white">管理员登录</h2>
+        <p class="text-center text-light opacity-75 mb-4">访问博客管理后台</p>
+
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
-                    <div class="alert alert-danger">{{ message }}</div>
+                    <div class="alert alert-danger mb-4">
+                        <i class="fas fa-exclamation-triangle me-2"></i>{{ message }}
+                    </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
+
         <form method="POST">
             <div class="mb-3">
-                <label for="username" class="form-label">用户名</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+                <label for="username" class="form-label">
+                    <i class="fas fa-user me-2"></i>用户名
+                </label>
+                <input type="text" class="form-control" id="username" name="username"
+                       placeholder="请输入管理员用户名" required>
             </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">密码</label>
-                <input type="password" class="form-control" id="password" name="password" required>
+            <div class="mb-4">
+                <label for="password" class="form-label">
+                    <i class="fas fa-lock me-2"></i>密码
+                </label>
+                <input type="password" class="form-control" id="password" name="password"
+                       placeholder="请输入管理员密码" required>
             </div>
-            <button type="submit" class="btn btn-primary w-100">登录</button>
+            <button type="submit" class="login-btn">
+                <i class="fas fa-sign-in-alt me-2"></i>登录管理后台
+            </button>
         </form>
-        <div class="text-center mt-3">
-            <a href="{{ url_for('index') }}" class="text-muted">返回首页</a>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('index') }}" class="back-link">
+                <i class="fas fa-arrow-left me-1"></i>返回首页
+            </a>
         </div>
     </div>
 </body>
@@ -4034,96 +4174,442 @@ ADMIN_DASHBOARD_TEMPLATE = '''
     <title>管理后台 - {{ config.BLOG_TITLE }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    ''' + BASE_STYLES + '''
+    <style>
+        .admin-sidebar {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(102, 126, 234, 0.3);
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            z-index: 1000;
+            padding: 2rem 0;
+        }
+
+        .admin-content {
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .sidebar-brand {
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-nav-link:hover,
+        .sidebar-nav-link.active {
+            color: white;
+            background: rgba(102, 126, 234, 0.2);
+            border-left-color: #667eea;
+            text-decoration: none;
+        }
+
+        .sidebar-nav-link i {
+            width: 20px;
+            margin-right: 1rem;
+        }
+
+        .admin-card {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .admin-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+        }
+
+        .stat-card {
+            background: var(--gradient-primary);
+            border-radius: 20px;
+            padding: 2rem;
+            color: white;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: rotate 3s linear infinite;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .quick-action-btn {
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-glow);
+            color: white;
+            text-decoration: none;
+        }
+
+        .table-dark {
+            background: rgba(30, 41, 59, 0.9) !important;
+            border-color: rgba(102, 126, 234, 0.3) !important;
+        }
+
+        .table-dark th,
+        .table-dark td {
+            border-color: rgba(102, 126, 234, 0.3) !important;
+            color: white !important;
+        }
+
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .admin-sidebar.show {
+                transform: translateX(0);
+            }
+
+            .admin-content {
+                margin-left: 0;
+            }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('admin_dashboard') }}">
-                <i class="fas fa-cog me-2"></i>管理后台
-            </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="{{ url_for('index') }}">
-                    <i class="fas fa-home me-1"></i>返回首页
-                </a>
-                <a class="nav-link" href="{{ url_for('logout') }}">
-                    <i class="fas fa-sign-out-alt me-1"></i>退出
-                </a>
-            </div>
-        </div>
-    </nav>
+    ''' + BASE_JAVASCRIPT + '''
 
-    <div class="container py-4">
-        <h1 class="mb-4">管理后台</h1>
-
-        <div class="row">
-            <div class="col-md-3 mb-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h3 class="text-primary">{{ dashboard_stats.total_posts }}</h3>
-                        <p class="mb-0">总文章数</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h3 class="text-success">{{ dashboard_stats.published_posts }}</h3>
-                        <p class="mb-0">已发布</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h3 class="text-warning">{{ dashboard_stats.total_visitors }}</h3>
-                        <p class="mb-0">总访客</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h3 class="text-info">{{ dashboard_stats.total_comments }}</h3>
-                        <p class="mb-0">总评论</p>
-                    </div>
-                </div>
-            </div>
+    <!-- 侧边栏 -->
+    <div class="admin-sidebar">
+        <div class="sidebar-brand">
+            <h4 class="text-white mb-0">
+                <i class="fas fa-shield-alt me-2"></i>管理后台
+            </h4>
+            <small class="text-light opacity-75">{{ config.BLOG_TITLE }}</small>
         </div>
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">最新文章</h5>
+        <ul class="sidebar-nav">
+            <li class="sidebar-nav-item">
+                <a href="#dashboard" class="sidebar-nav-link active" onclick="showSection('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i>仪表盘
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="#posts" class="sidebar-nav-link" onclick="showSection('posts')">
+                    <i class="fas fa-edit"></i>文章管理
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="#categories" class="sidebar-nav-link" onclick="showSection('categories')">
+                    <i class="fas fa-folder"></i>分类管理
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="#projects" class="sidebar-nav-link" onclick="showSection('projects')">
+                    <i class="fas fa-project-diagram"></i>项目管理
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="#timeline" class="sidebar-nav-link" onclick="showSection('timeline')">
+                    <i class="fas fa-clock"></i>时间线管理
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="#links" class="sidebar-nav-link" onclick="showSection('links')">
+                    <i class="fas fa-link"></i>友链管理
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="#profile" class="sidebar-nav-link" onclick="showSection('profile')">
+                    <i class="fas fa-user"></i>个人信息
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="#settings" class="sidebar-nav-link" onclick="showSection('settings')">
+                    <i class="fas fa-cog"></i>系统设置
+                </a>
+            </li>
+            <li class="sidebar-nav-item mt-4">
+                <a href="{{ url_for('index') }}" class="sidebar-nav-link">
+                    <i class="fas fa-home"></i>返回首页
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="{{ url_for('logout') }}" class="sidebar-nav-link">
+                    <i class="fas fa-sign-out-alt"></i>退出登录
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="admin-content">
+        <!-- 仪表盘 -->
+        <div id="dashboard" class="admin-section">
+            <h1 class="text-white mb-4">
+                <i class="fas fa-tachometer-alt me-2"></i>管理仪表盘
+            </h1>
+
+            <!-- 统计卡片 -->
+            <div class="row mb-4">
+                <div class="col-md-3 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ dashboard_stats.total_posts }}</div>
+                        <div><i class="fas fa-edit me-2"></i>总文章数</div>
                     </div>
-                    <div class="card-body">
-                        {% for post in recent_posts %}
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span>{{ post.title }}</span>
-                            <small class="text-muted">{{ post.created_at.strftime('%m-%d') }}</small>
-                        </div>
-                        {% endfor %}
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ dashboard_stats.published_posts }}</div>
+                        <div><i class="fas fa-check me-2"></i>已发布</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ dashboard_stats.total_visitors }}</div>
+                        <div><i class="fas fa-users me-2"></i>总访客</div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ dashboard_stats.total_comments }}</div>
+                        <div><i class="fas fa-comments me-2"></i>总评论</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">最新评论</h5>
-                    </div>
-                    <div class="card-body">
-                        {% for comment in recent_comments %}
-                        <div class="mb-2">
-                            <strong>{{ comment.author_name }}</strong>
-                            <p class="mb-1 small">{{ comment.content[:50] }}...</p>
-                            <small class="text-muted">{{ comment.created_at.strftime('%m-%d %H:%M') }}</small>
+
+            <!-- 快速操作 -->
+            <div class="admin-card">
+                <h3 class="text-white mb-3">
+                    <i class="fas fa-bolt me-2"></i>快速操作
+                </h3>
+                <a href="#posts" class="quick-action-btn" onclick="showSection('posts')">
+                    <i class="fas fa-plus me-2"></i>写新文章
+                </a>
+                <a href="#projects" class="quick-action-btn" onclick="showSection('projects')">
+                    <i class="fas fa-project-diagram me-2"></i>添加项目
+                </a>
+                <a href="#timeline" class="quick-action-btn" onclick="showSection('timeline')">
+                    <i class="fas fa-clock me-2"></i>更新时间线
+                </a>
+                <a href="#profile" class="quick-action-btn" onclick="showSection('profile')">
+                    <i class="fas fa-user me-2"></i>编辑个人信息
+                </a>
+            </div>
+
+            <!-- 最新内容 -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="admin-card">
+                        <h5 class="text-white mb-3">
+                            <i class="fas fa-newspaper me-2"></i>最新文章
+                        </h5>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <tbody>
+                                    {% for post in recent_posts %}
+                                    <tr>
+                                        <td>{{ post.title }}</td>
+                                        <td class="text-end">
+                                            <small class="text-light opacity-75">{{ post.created_at.strftime('%m-%d') }}</small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
-                        {% endfor %}
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <div class="admin-card">
+                        <h5 class="text-white mb-3">
+                            <i class="fas fa-comment me-2"></i>最新评论
+                        </h5>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <tbody>
+                                    {% for comment in recent_comments %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ comment.author_name }}</strong><br>
+                                            <small class="text-light opacity-75">{{ comment.content[:30] }}...</small>
+                                        </td>
+                                        <td class="text-end">
+                                            <small class="text-light opacity-75">{{ comment.created_at.strftime('%m-%d %H:%M') }}</small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 文章管理 -->
+        <div id="posts" class="admin-section" style="display: none;">
+            <h1 class="text-white mb-4">
+                <i class="fas fa-edit me-2"></i>文章管理
+            </h1>
+
+            <div class="admin-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-white mb-0">所有文章</h5>
+                    <button class="quick-action-btn" onclick="showAddPostForm()">
+                        <i class="fas fa-plus me-2"></i>写新文章
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>标题</th>
+                                <th>分类</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 这里会通过JavaScript动态加载文章列表 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 个人信息管理 -->
+        <div id="profile" class="admin-section" style="display: none;">
+            <h1 class="text-white mb-4">
+                <i class="fas fa-user me-2"></i>个人信息管理
+            </h1>
+
+            <div class="admin-card">
+                <h5 class="text-white mb-3">基本信息</h5>
+                <form id="profileForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-light">姓名</label>
+                            <input type="text" class="form-control" name="name" value="{{ config.AUTHOR_NAME }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-light">邮箱</label>
+                            <input type="email" class="form-control" name="email" value="{{ config.AUTHOR_EMAIL }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-light">位置</label>
+                            <input type="text" class="form-control" name="location" value="{{ config.AUTHOR_LOCATION }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-light">GitHub用户名</label>
+                            <input type="text" class="form-control" name="github" value="wswldcs">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label text-light">个人简介</label>
+                            <textarea class="form-control" name="bio" rows="3">用数据讲故事，用分析驱动决策</textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="quick-action-btn">
+                        <i class="fas fa-save me-2"></i>保存更改
+                    </button>
+                </form>
             </div>
         </div>
     </div>
+
+    <script>
+        // 管理后台JavaScript功能
+        function showSection(sectionId) {
+            // 隐藏所有section
+            document.querySelectorAll('.admin-section').forEach(section => {
+                section.style.display = 'none';
+            });
+
+            // 移除所有active类
+            document.querySelectorAll('.sidebar-nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // 显示选中的section
+            document.getElementById(sectionId).style.display = 'block';
+
+            // 添加active类到当前链接
+            event.target.classList.add('active');
+        }
+
+        function showAddPostForm() {
+            // 这里可以显示添加文章的模态框或跳转到编辑页面
+            alert('添加文章功能开发中...');
+        }
+
+        // 表单提交处理
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('个人信息保存功能开发中...');
+        });
+    </script>
 </body>
 </html>
 '''
