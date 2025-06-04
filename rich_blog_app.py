@@ -2239,6 +2239,405 @@ INDEX_TEMPLATE = '''
 </html>
 '''
 
+# 统一的页面基础样式
+BASE_STYLES = '''
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --data-blue: #3b82f6;
+            --data-purple: #8b5cf6;
+            --data-green: #10b981;
+            --data-orange: #f59e0b;
+            --data-red: #ef4444;
+            --success-color: #4ecdc4;
+            --warning-color: #ffe66d;
+            --danger-color: #ff6b6b;
+            --dark-color: #1e293b;
+            --light-color: #f8fafc;
+            --gradient-primary: linear-gradient(135deg, var(--data-blue) 0%, var(--data-purple) 100%);
+            --gradient-accent: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
+            --gradient-data: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px rgba(0,0,0,0.1);
+            --shadow-glow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #f8fafc;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 粒子背景 */
+        .particles-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(102, 126, 234, 0.6);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        /* 超炫酷导航栏 */
+        .navbar {
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            padding: 1rem 0;
+            position: fixed !important;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: rgba(15, 23, 42, 0.98) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white !important;
+            text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            color: var(--data-blue) !important;
+            text-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+            transform: scale(1.05);
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            margin: 0 0.5rem;
+            padding: 0.5rem 1rem !important;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .navbar-nav .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .navbar-nav .nav-link:hover::before {
+            left: 0;
+        }
+
+        .navbar-nav .nav-link.active {
+            background: var(--gradient-primary);
+            color: white !important;
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* 页面内容顶部间距 */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem 0;
+        }
+
+        /* 超炫酷卡片 */
+        .cool-card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .cool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-primary);
+        }
+
+        .cool-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            border-color: rgba(102, 126, 234, 0.4);
+        }
+
+        /* 按钮样式 */
+        .btn-cool {
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-cool:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+            color: white;
+        }
+
+        .btn-cool::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.5s ease;
+        }
+
+        .btn-cool:hover::before {
+            left: 100%;
+        }
+
+        /* 标签样式 */
+        .cool-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            margin: 0.25rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .cool-tag:hover {
+            transform: translateY(-2px);
+            text-decoration: none;
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* 页面标题 */
+        .page-title {
+            font-size: 3rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 3rem;
+            background: linear-gradient(45deg, #ffffff, #e0e7ff, #c7d2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+        }
+
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
+'''
+
+# 统一的导航栏HTML
+NAVBAR_HTML = '''
+    <!-- 粒子背景 -->
+    <div class="particles-bg" id="particles-bg"></div>
+
+    <!-- 超炫酷导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-blog me-2"></i>{{ config.BLOG_TITLE }}
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">
+                            <i class="fas fa-home me-1"></i>首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('blog') }}">
+                            <i class="fas fa-blog me-1"></i>博客
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('projects') }}">
+                            <i class="fas fa-code me-1"></i>项目
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('timeline') }}">
+                            <i class="fas fa-history me-1"></i>历程
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('links') }}">
+                            <i class="fas fa-link me-1"></i>友链
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('about') }}">
+                            <i class="fas fa-user me-1"></i>关于
+                        </a>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">
+                            <i class="fas fa-cog me-1"></i>管理
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+'''
+
+# 统一的JavaScript
+BASE_JAVASCRIPT = '''
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 创建粒子背景
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles-bg');
+            if (!particlesContainer) return;
+
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+
+                // 随机大小和位置
+                const size = Math.random() * 4 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+
+                // 随机动画延迟
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 导航栏滚动效果
+        function handleNavbarScroll() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 创建粒子背景
+            createParticles();
+
+            // 滚动事件监听
+            window.addEventListener('scroll', handleNavbarScroll);
+
+            // 添加滚动动画
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // 观察所有需要动画的元素
+            document.querySelectorAll('.fade-in-up').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'all 0.6s ease-out';
+                observer.observe(el);
+            });
+
+            // 为导航链接添加活动状态
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+'''
+
 # 博客列表页面模板
 BLOG_TEMPLATE = '''
 <!DOCTYPE html>
@@ -2249,117 +2648,138 @@ BLOG_TEMPLATE = '''
     <title>博客文章 - {{ config.BLOG_TITLE }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
-        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
-        .card { border: none; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .card:hover { transform: translateY(-5px); }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    ''' + BASE_STYLES + '''
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    ''' + NAVBAR_HTML + '''
+
+    <!-- 主要内容区域 -->
+    <div class="main-content">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-blog me-2"></i>{{ config.BLOG_TITLE }}
-            </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="{{ url_for('index') }}">首页</a>
-                <a class="nav-link" href="{{ url_for('blog') }}">博客</a>
-                <a class="nav-link" href="{{ url_for('projects') }}">项目</a>
-                <a class="nav-link" href="{{ url_for('about') }}">关于</a>
-            </div>
-        </div>
-    </nav>
+            <h1 class="page-title fade-in-up">📝 学习笔记</h1>
 
-    <div class="container py-5">
-        <h1 class="mb-4">博客文章</h1>
-
-        <!-- 搜索和筛选 -->
-        <div class="row mb-4">
-            <div class="col-md-8">
-                <form method="GET" class="d-flex">
-                    <input type="text" name="search" class="form-control me-2" placeholder="搜索文章..." value="{{ search_query or '' }}">
-                    <button type="submit" class="btn btn-primary">搜索</button>
-                </form>
+            <!-- 搜索和筛选 -->
+            <div class="row mb-5 fade-in-up">
+                <div class="col-md-8">
+                    <form method="GET" class="d-flex">
+                        <input type="text" name="search" class="form-control me-3"
+                               placeholder="🔍 搜索我的学习笔记..."
+                               value="{{ search_query or '' }}"
+                               style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white; border-radius: 25px; padding: 0.75rem 1.5rem;">
+                        <button type="submit" class="btn btn-cool">
+                            <i class="fas fa-search me-2"></i>搜索
+                        </button>
+                    </form>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select"
+                            onchange="location.href='{{ url_for('blog') }}?category=' + this.value"
+                            style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white; border-radius: 25px; padding: 0.75rem 1.5rem;">
+                        <option value="">📚 所有分类</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if current_category == category.id %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
-            <div class="col-md-4">
-                <select class="form-select" onchange="location.href='{{ url_for('blog') }}?category=' + this.value">
-                    <option value="">所有分类</option>
-                    {% for category in categories %}
-                    <option value="{{ category.id }}" {% if current_category == category.id %}selected{% endif %}>
-                        {{ category.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
 
-        <!-- 文章列表 -->
-        <div class="row">
-            {% for post in posts.items %}
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <a href="{{ url_for('post', slug=post.slug) }}" class="text-decoration-none">
-                                {{ post.title }}
-                            </a>
-                        </h5>
-                        <p class="card-text">{{ post.summary or post.content[:150] + '...' }}</p>
+            <!-- 文章列表 -->
+            <div class="row">
+                {% for post in posts.items %}
+                <div class="col-md-6 mb-4 fade-in-up">
+                    <div class="cool-card h-100 p-4">
+                        <div class="d-flex align-items-start mb-3">
+                            {% if post.category %}
+                            <div class="me-3">
+                                <i class="{{ post.category.icon }}" style="color: {{ post.category.color }}; font-size: 1.5rem;"></i>
+                            </div>
+                            {% endif %}
+                            <div class="flex-grow-1">
+                                <h5 class="mb-2">
+                                    <a href="{{ url_for('post', slug=post.slug) }}"
+                                       class="text-decoration-none text-white"
+                                       style="transition: all 0.3s ease;">
+                                        {{ post.title }}
+                                    </a>
+                                </h5>
+                                <p class="text-light opacity-75 mb-3">{{ post.summary or post.content[:120] + '...' }}</p>
+                            </div>
+                        </div>
+
+                        <!-- 标签 -->
+                        {% if post.tags %}
+                        <div class="mb-3">
+                            {% for tag in post.tags %}
+                            <span class="cool-tag" style="background-color: {{ tag.color }}20; color: {{ tag.color }}; border-color: {{ tag.color }}40;">
+                                {{ tag.name }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
                         <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">
-                                <i class="fas fa-calendar me-1"></i>{{ post.created_at.strftime('%Y-%m-%d') }}
-                                <i class="fas fa-eye ms-2 me-1"></i>{{ post.view_count }}
+                            <small class="text-light opacity-75">
+                                <i class="fas fa-calendar me-1"></i>{{ post.created_at.strftime('%Y年%m月%d日') }}
+                                <i class="fas fa-eye ms-3 me-1"></i>{{ post.view_count }} 次阅读
                             </small>
                             {% if post.category %}
-                            <span class="badge" style="background-color: {{ post.category.color }};">
-                                {{ post.category.name }}
+                            <span class="cool-tag" style="background-color: {{ post.category.color }}; color: white; border-color: {{ post.category.color }};">
+                                <i class="{{ post.category.icon }} me-1"></i>{{ post.category.name }}
                             </span>
                             {% endif %}
                         </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
 
-        <!-- 分页 -->
-        {% if posts.pages > 1 %}
-        <nav>
-            <ul class="pagination justify-content-center">
-                {% if posts.has_prev %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ url_for('blog', page=posts.prev_num) }}">上一页</a>
-                </li>
-                {% endif %}
-
-                {% for page_num in posts.iter_pages() %}
-                    {% if page_num %}
-                        {% if page_num != posts.page %}
-                        <li class="page-item">
-                            <a class="page-link" href="{{ url_for('blog', page=page_num) }}">{{ page_num }}</a>
-                        </li>
-                        {% else %}
-                        <li class="page-item active">
-                            <span class="page-link">{{ page_num }}</span>
-                        </li>
-                        {% endif %}
-                    {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">…</span>
+            <!-- 分页 -->
+            {% if posts.pages > 1 %}
+            <nav class="mt-5 fade-in-up">
+                <ul class="pagination justify-content-center">
+                    {% if posts.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link btn-cool me-2" href="{{ url_for('blog', page=posts.prev_num) }}">
+                            <i class="fas fa-chevron-left me-1"></i>上一页
+                        </a>
                     </li>
                     {% endif %}
-                {% endfor %}
 
-                {% if posts.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ url_for('blog', page=posts.next_num) }}">下一页</a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
-        {% endif %}
+                    {% for page_num in posts.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != posts.page %}
+                            <li class="page-item">
+                                <a class="page-link cool-tag me-1" href="{{ url_for('blog', page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link btn-cool me-1">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link cool-tag me-1">…</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if posts.has_next %}
+                    <li class="page-item">
+                        <a class="page-link btn-cool ms-2" href="{{ url_for('blog', page=posts.next_num) }}">
+                            下一页<i class="fas fa-chevron-right ms-1"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
     </div>
+
+    ''' + BASE_JAVASCRIPT + '''
 </body>
 </html>
 '''
@@ -2496,80 +2916,266 @@ TIMELINE_TEMPLATE = '''
     <title>学习历程 - {{ config.BLOG_TITLE }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    ''' + BASE_STYLES + '''
     <style>
-        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
-        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
-        .timeline { position: relative; padding: 2rem 0; }
+        /* 超炫酷时间线样式 */
+        .timeline {
+            position: relative;
+            padding: 3rem 0;
+        }
+
         .timeline::before {
-            content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px;
-            background: linear-gradient(to bottom, #667eea, #764ba2);
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--gradient-primary);
+            transform: translateX(-50%);
+            border-radius: 2px;
+            box-shadow: var(--shadow-glow);
         }
-        .timeline-item { position: relative; margin-bottom: 3rem; }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 4rem;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.6s ease;
+        }
+
+        .timeline-item.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .timeline-content {
-            background: white; border-radius: 15px; padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 45%;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            width: 45%;
+            position: relative;
+            transition: all 0.3s ease;
         }
-        .timeline-item:nth-child(odd) .timeline-content { margin-left: 55%; }
-        .timeline-item:nth-child(even) .timeline-content { margin-right: 55%; }
+
+        .timeline-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .timeline-content:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content {
+            margin-left: 55%;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-right: 55%;
+        }
+
         .timeline-icon {
-            position: absolute; left: 50%; top: 1rem; transform: translateX(-50%);
-            width: 50px; height: 50px; border-radius: 50%; display: flex;
-            align-items: center; justify-content: center; color: white; font-size: 1.2rem;
+            position: absolute;
+            left: 50%;
+            top: 2rem;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            background: var(--gradient-primary);
+            box-shadow: var(--shadow-glow);
+            border: 3px solid rgba(15, 23, 42, 1);
+            z-index: 10;
         }
+
         .timeline-date {
-            position: absolute; left: 50%; top: 4rem; transform: translateX(-50%);
-            background: white; padding: 0.5rem 1rem; border-radius: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); white-space: nowrap;
+            position: absolute;
+            left: 50%;
+            top: 5rem;
+            transform: translateX(-50%);
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .year-header {
+            text-align: center;
+            margin: 4rem 0 2rem;
+            position: relative;
+        }
+
+        .year-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+            display: inline-block;
+            padding: 1rem 2rem;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50px;
+            background-color: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 30px;
+            }
+
+            .timeline-content {
+                width: calc(100% - 80px);
+                margin-left: 80px !important;
+                margin-right: 0 !important;
+            }
+
+            .timeline-icon {
+                left: 30px;
+            }
+
+            .timeline-date {
+                left: 30px;
+                top: 6rem;
+            }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    ''' + NAVBAR_HTML + '''
+
+    <!-- 主要内容区域 -->
+    <div class="main-content">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-blog me-2"></i>{{ config.BLOG_TITLE }}
-            </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="{{ url_for('index') }}">首页</a>
-                <a class="nav-link" href="{{ url_for('blog') }}">博客</a>
-                <a class="nav-link" href="{{ url_for('projects') }}">项目</a>
-                <a class="nav-link" href="{{ url_for('timeline') }}">历程</a>
-                <a class="nav-link" href="{{ url_for('about') }}">关于</a>
-            </div>
-        </div>
-    </nav>
+            <h1 class="page-title fade-in-up">🎓 我的数据分析师成长历程</h1>
+            <p class="text-center text-light opacity-75 mb-5 fade-in-up" style="font-size: 1.2rem;">
+                从2021年9月踏入大学校园，到2025年6月即将毕业<br>
+                记录我在数据科学道路上的每一个重要时刻
+            </p>
 
-    <div class="container py-5">
-        <h1 class="text-center mb-5">学习历程</h1>
+            <div class="timeline">
+                {% for year, items in timeline_by_year.items() %}
+                <div class="year-header fade-in-up">
+                    <div class="year-title">{{ year }}年</div>
+                </div>
+                {% for item in items %}
+                <div class="timeline-item">
+                    <div class="timeline-icon" style="background: {{ item.color }};">
+                        <i class="{{ item.icon }}"></i>
+                    </div>
+                    <div class="timeline-date">
+                        {{ item.date.strftime('%m月%d日') }}
+                    </div>
+                    <div class="timeline-content">
+                        <h5 class="mb-3 text-white">{{ item.title }}</h5>
+                        <p class="text-light opacity-75 mb-3">{{ item.description }}</p>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span class="cool-tag" style="background-color: {{ item.color }}; color: white; border-color: {{ item.color }};">
+                                <i class="{{ item.icon }} me-1"></i>
+                                {% if item.category == 'education' %}📚 学习成长
+                                {% elif item.category == 'work' %}💼 实习工作
+                                {% elif item.category == 'project' %}🚀 项目实战
+                                {% elif item.category == 'competition' %}🏆 竞赛获奖
+                                {% elif item.category == 'skill' %}💡 技能提升
+                                {% else %}🌟 重要时刻{% endif %}
+                            </span>
+                            {% if item.link %}
+                            <a href="{{ item.link }}" class="btn btn-cool btn-sm" target="_blank">
+                                <i class="fas fa-external-link-alt me-1"></i>查看详情
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endfor %}
+            </div>
 
-        <div class="timeline">
-            {% for year, items in timeline_by_year.items() %}
-            <div class="text-center mb-4">
-                <h2 class="text-primary">{{ year }}年</h2>
+            <!-- 统计信息 -->
+            <div class="row mt-5 fade-in-up">
+                <div class="col-md-3 mb-3">
+                    <div class="cool-card text-center p-4">
+                        <i class="fas fa-graduation-cap text-primary mb-3" style="font-size: 2rem;"></i>
+                        <h4 class="text-white">4年</h4>
+                        <p class="text-light opacity-75 mb-0">大学学习</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="cool-card text-center p-4">
+                        <i class="fas fa-code text-success mb-3" style="font-size: 2rem;"></i>
+                        <h4 class="text-white">15+</h4>
+                        <p class="text-light opacity-75 mb-0">技能掌握</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="cool-card text-center p-4">
+                        <i class="fas fa-project-diagram text-warning mb-3" style="font-size: 2rem;"></i>
+                        <h4 class="text-white">10+</h4>
+                        <p class="text-light opacity-75 mb-0">项目经验</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="cool-card text-center p-4">
+                        <i class="fas fa-trophy text-danger mb-3" style="font-size: 2rem;"></i>
+                        <h4 class="text-white">5+</h4>
+                        <p class="text-light opacity-75 mb-0">竞赛获奖</p>
+                    </div>
+                </div>
             </div>
-            {% for item in items %}
-            <div class="timeline-item">
-                <div class="timeline-icon" style="background-color: {{ item.color }};">
-                    <i class="{{ item.icon }}"></i>
-                </div>
-                <div class="timeline-date">
-                    <small class="text-muted">{{ item.date.strftime('%m月%d日') }}</small>
-                </div>
-                <div class="timeline-content">
-                    <h5 class="mb-3">{{ item.title }}</h5>
-                    <p class="text-muted">{{ item.description }}</p>
-                    <span class="badge" style="background-color: {{ item.color }};">
-                        {% if item.category == 'education' %}学习
-                        {% elif item.category == 'work' %}工作
-                        {% elif item.category == 'project' %}项目
-                        {% else %}生活{% endif %}
-                    </span>
-                </div>
-            </div>
-            {% endfor %}
-            {% endfor %}
         </div>
     </div>
+
+    ''' + BASE_JAVASCRIPT + '''
+    <script>
+        // 时间线动画
+        document.addEventListener('DOMContentLoaded', function() {
+            const timelineItems = document.querySelectorAll('.timeline-item');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.classList.add('animate');
+                        }, index * 200);
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            timelineItems.forEach(item => {
+                observer.observe(item);
+            });
+        });
+    </script>
 </body>
 </html>
 '''
