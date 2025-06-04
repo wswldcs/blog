@@ -4981,6 +4981,64 @@ ADMIN_DASHBOARD_TEMPLATE = '''
             color: white !important;
         }
 
+        /* 编辑器按钮样式 */
+        .btn-outline-primary {
+            border: 1px solid #667eea !important;
+            color: #667eea !important;
+            background: transparent !important;
+            border-radius: 20px !important;
+            font-size: 0.875rem !important;
+            padding: 0.375rem 0.75rem !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .btn-outline-primary:hover {
+            background: #667eea !important;
+            color: white !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3) !important;
+        }
+
+        .btn-outline-secondary {
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            color: rgba(255, 255, 255, 0.8) !important;
+            background: transparent !important;
+            border-radius: 20px !important;
+            font-size: 0.875rem !important;
+            padding: 0.375rem 0.75rem !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .btn-outline-secondary:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        /* 文本框拖拽样式 */
+        .form-control {
+            transition: all 0.3s ease !important;
+        }
+
+        .form-control:focus {
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+        }
+
+        /* 模态框样式 */
+        .modal-content {
+            border-radius: 20px !important;
+        }
+
+        .modal-header {
+            border-radius: 20px 20px 0 0 !important;
+        }
+
+        .modal-footer {
+            border-radius: 0 0 20px 20px !important;
+        }
+
         @media (max-width: 768px) {
             .admin-sidebar {
                 transform: translateX(-100%);
@@ -5630,9 +5688,29 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label text-light">内容 *</label>
-                                        <textarea class="form-control" name="content" rows="10" required
+                                        <div class="mb-2">
+                                            <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="insertImageToContent('content')">
+                                                <i class="fas fa-image me-1"></i>插入图片
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="insertMarkdownTemplate('content', 'heading')">
+                                                <i class="fas fa-heading me-1"></i>标题
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="insertMarkdownTemplate('content', 'bold')">
+                                                <i class="fas fa-bold me-1"></i>粗体
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="insertMarkdownTemplate('content', 'italic')">
+                                                <i class="fas fa-italic me-1"></i>斜体
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="insertMarkdownTemplate('content', 'code')">
+                                                <i class="fas fa-code me-1"></i>代码
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="insertMarkdownTemplate('content', 'link')">
+                                                <i class="fas fa-link me-1"></i>链接
+                                            </button>
+                                        </div>
+                                        <textarea class="form-control" name="content" rows="12" required
                                                   style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
-                                                  placeholder="请输入文章内容..."></textarea>
+                                                  placeholder="请输入文章内容...支持Markdown格式"></textarea>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6">
@@ -5816,9 +5894,29 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label text-light">内容 *</label>
-                                            <textarea class="form-control" name="content" rows="10" required
+                                            <div class="mb-2">
+                                                <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="insertImageToContent('editContent')">
+                                                    <i class="fas fa-image me-1"></i>插入图片
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="insertMarkdownTemplate('editContent', 'heading')">
+                                                    <i class="fas fa-heading me-1"></i>标题
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="insertMarkdownTemplate('editContent', 'bold')">
+                                                    <i class="fas fa-bold me-1"></i>粗体
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="insertMarkdownTemplate('editContent', 'italic')">
+                                                    <i class="fas fa-italic me-1"></i>斜体
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm me-2" onclick="insertMarkdownTemplate('editContent', 'code')">
+                                                    <i class="fas fa-code me-1"></i>代码
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="insertMarkdownTemplate('editContent', 'link')">
+                                                    <i class="fas fa-link me-1"></i>链接
+                                                </button>
+                                            </div>
+                                            <textarea class="form-control" name="content" id="editContent" rows="12" required
                                                       style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
-                                                      placeholder="请输入文章内容...">${post.content}</textarea>
+                                                      placeholder="请输入文章内容...支持Markdown格式">${post.content}</textarea>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-6">
@@ -5980,6 +6078,215 @@ ADMIN_DASHBOARD_TEMPLATE = '''
             }
         }
 
+        // 图片上传功能
+        async function insertImageToContent(textareaName) {
+            // 创建文件输入元素
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.style.display = 'none';
+
+            fileInput.onchange = async function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // 验证文件类型
+                if (!file.type.startsWith('image/')) {
+                    alert('请选择图片文件');
+                    return;
+                }
+
+                // 验证文件大小 (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('图片文件不能超过5MB');
+                    return;
+                }
+
+                // 创建FormData
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    // 显示上传进度
+                    const uploadButton = document.querySelector(`button[onclick="insertImageToContent('${textareaName}')"]`);
+                    const originalText = uploadButton.innerHTML;
+                    uploadButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>上传中...';
+                    uploadButton.disabled = true;
+
+                    // 上传文件
+                    const response = await fetch('/api/admin/upload', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        // 插入Markdown图片语法到文本框
+                        const textarea = document.querySelector(`textarea[name="${textareaName}"], textarea#${textareaName}`);
+                        if (textarea) {
+                            const imageMarkdown = `![${file.name}](${result.url})`;
+                            insertTextAtCursor(textarea, imageMarkdown);
+                        }
+
+                        alert('图片上传成功！');
+                    } else {
+                        alert('上传失败: ' + (result.error || '未知错误'));
+                    }
+                } catch (error) {
+                    console.error('上传图片失败:', error);
+                    alert('上传图片失败: ' + error.message);
+                } finally {
+                    // 恢复按钮状态
+                    const uploadButton = document.querySelector(`button[onclick="insertImageToContent('${textareaName}')"]`);
+                    uploadButton.innerHTML = originalText;
+                    uploadButton.disabled = false;
+                }
+            };
+
+            // 触发文件选择
+            document.body.appendChild(fileInput);
+            fileInput.click();
+            document.body.removeChild(fileInput);
+        }
+
+        // 插入Markdown模板
+        function insertMarkdownTemplate(textareaName, type) {
+            const textarea = document.querySelector(`textarea[name="${textareaName}"], textarea#${textareaName}`);
+            if (!textarea) return;
+
+            let template = '';
+            let cursorOffset = 0;
+
+            switch (type) {
+                case 'heading':
+                    template = '## 标题';
+                    cursorOffset = 3;
+                    break;
+                case 'bold':
+                    template = '**粗体文本**';
+                    cursorOffset = 2;
+                    break;
+                case 'italic':
+                    template = '*斜体文本*';
+                    cursorOffset = 1;
+                    break;
+                case 'code':
+                    template = '`代码`';
+                    cursorOffset = 1;
+                    break;
+                case 'link':
+                    template = '[链接文本](http://example.com)';
+                    cursorOffset = 1;
+                    break;
+                default:
+                    return;
+            }
+
+            insertTextAtCursor(textarea, template, cursorOffset);
+        }
+
+        // 在光标位置插入文本
+        function insertTextAtCursor(textarea, text, cursorOffset = 0) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const value = textarea.value;
+
+            // 插入文本
+            textarea.value = value.substring(0, start) + text + value.substring(end);
+
+            // 设置光标位置
+            const newCursorPos = start + text.length - cursorOffset;
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+            textarea.focus();
+        }
+
+        // 拖拽上传功能
+        function setupDragAndDrop(textareaName) {
+            const textarea = document.querySelector(`textarea[name="${textareaName}"], textarea#${textareaName}`);
+            if (!textarea) return;
+
+            textarea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                textarea.style.borderColor = '#667eea';
+                textarea.style.backgroundColor = 'rgba(102, 126, 234, 0.1)';
+            });
+
+            textarea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                textarea.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                textarea.style.backgroundColor = 'rgba(15, 23, 42, 0.8)';
+            });
+
+            textarea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                textarea.style.borderColor = 'rgba(102, 126, 234, 0.3)';
+                textarea.style.backgroundColor = 'rgba(15, 23, 42, 0.8)';
+
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('image/')) {
+                        // 模拟文件选择事件
+                        const fileInput = document.createElement('input');
+                        fileInput.type = 'file';
+                        fileInput.files = files;
+
+                        const event = new Event('change');
+                        Object.defineProperty(event, 'target', {
+                            value: fileInput,
+                            enumerable: true
+                        });
+
+                        // 触发上传
+                        uploadImageFile(file, textareaName);
+                    } else {
+                        alert('请拖拽图片文件');
+                    }
+                }
+            });
+        }
+
+        // 上传图片文件
+        async function uploadImageFile(file, textareaName) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert('图片文件不能超过5MB');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/api/admin/upload', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    const textarea = document.querySelector(`textarea[name="${textareaName}"], textarea#${textareaName}`);
+                    if (textarea) {
+                        const imageMarkdown = `![${file.name}](${result.url})`;
+                        insertTextAtCursor(textarea, imageMarkdown);
+                    }
+                    alert('图片上传成功！');
+                } else {
+                    alert('上传失败: ' + (result.error || '未知错误'));
+                }
+            } catch (error) {
+                console.error('上传图片失败:', error);
+                alert('上传图片失败: ' + error.message);
+            }
+        }
+
         // 表单提交处理
         document.addEventListener('DOMContentLoaded', function() {
             const profileForm = document.getElementById('profileForm');
@@ -5992,6 +6299,12 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 // 页面加载时加载个人信息
                 loadProfile();
             }
+
+            // 为文本框设置拖拽上传
+            setTimeout(() => {
+                setupDragAndDrop('content');
+                setupDragAndDrop('editContent');
+            }, 1000);
         });
 
         // 加载项目列表
