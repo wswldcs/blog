@@ -17,7 +17,7 @@ def hello():
     <html>
     <head><title>Railway测试</title></head>
     <body style="font-family: Arial; text-align: center; padding: 50px;">
-        <h1>🚀 Railway部署成功！</h1>
+        <h1>🚀 Railway简单测试应用运行中！</h1>
         <p>应用正在端口 {port} 运行</p>
         <p>时间: {__import__('datetime').datetime.now()}</p>
         <hr>
@@ -35,5 +35,10 @@ def health():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
-    print(f"🚀 启动测试应用，端口: {port}")
+    print("="*50)
+    print("🚀 启动Railway简单测试应用")
+    print(f"📡 端口: {port}")
+    print(f"🔗 PORT环境变量: {os.environ.get('PORT', '未设置')}")
+    print("✅ 这是simple_test.py，不是railway_simple.py")
+    print("="*50)
     app.run(host='0.0.0.0', port=port, debug=False)
