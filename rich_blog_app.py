@@ -4581,6 +4581,72 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 </form>
             </div>
         </div>
+
+        <!-- 时间线管理 -->
+        <div id="timeline" class="admin-section" style="display: none;">
+            <h1 class="text-white mb-4">
+                <i class="fas fa-clock me-2"></i>时间线管理
+            </h1>
+
+            <div class="admin-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-white mb-0">学习历程时间线</h5>
+                    <button class="quick-action-btn" onclick="showAddTimelineForm()">
+                        <i class="fas fa-plus me-2"></i>添加时间线事件
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>标题</th>
+                                <th>日期</th>
+                                <th>分类</th>
+                                <th>描述</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timelineTableBody">
+                            <!-- 时间线数据将通过JavaScript加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 友链管理 -->
+        <div id="links" class="admin-section" style="display: none;">
+            <h1 class="text-white mb-4">
+                <i class="fas fa-link me-2"></i>友链管理
+            </h1>
+
+            <div class="admin-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-white mb-0">友情链接</h5>
+                    <button class="quick-action-btn" onclick="showAddLinkForm()">
+                        <i class="fas fa-plus me-2"></i>添加友链
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>网站名称</th>
+                                <th>网站链接</th>
+                                <th>分类</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="linksTableBody">
+                            <!-- 友链数据将通过JavaScript加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -4613,6 +4679,8 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 loadProjects();
             } else if (sectionId === 'timeline') {
                 loadTimeline();
+            } else if (sectionId === 'links') {
+                loadLinks();
             }
         }
 
@@ -4950,16 +5018,468 @@ ADMIN_DASHBOARD_TEMPLATE = '''
         // 加载时间线
         async function loadTimeline() {
             try {
-                const response = await fetch('/api/admin/timeline');
+                const response = await fetch('/api/admin/timeline', {
+                    credentials: 'same-origin'
+                });
                 const data = await response.json();
 
                 if (data.timeline) {
-                    console.log('时间线数据:', data.timeline);
-                    // 这里可以添加时间线列表的显示逻辑
+                    const tbody = document.getElementById('timelineTableBody');
+                    tbody.innerHTML = '';
+
+                    data.timeline.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>
+                                <i class="${item.icon} me-2" style="color: ${item.color}"></i>
+                                ${item.title}
+                            </td>
+                            <td>${item.date}</td>
+                            <td>
+                                <span class="badge" style="background-color: ${item.color}">
+                                    ${getCategoryName(item.category)}
+                                </span>
+                            </td>
+                            <td>${item.description || '暂无描述'}</td>
+                            <td>
+                                <button class="btn btn-cool btn-sm me-1" onclick="editTimeline(${item.id})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteTimeline(${item.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
                 }
             } catch (error) {
                 console.error('加载时间线失败:', error);
             }
+        }
+
+        // 获取分类中文名称
+        function getCategoryName(category) {
+            const categoryMap = {
+                'education': '学习',
+                'work': '工作',
+                'project': '项目',
+                'life': '生活',
+                'achievement': '成就'
+            };
+            return categoryMap[category] || category;
+        }
+
+        // 显示添加时间线表单
+        function showAddTimelineForm() {
+            const formHtml = `
+                <div class="modal fade" id="timelineModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content" style="background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(102, 126, 234, 0.3);">
+                            <div class="modal-header" style="border-bottom: 1px solid rgba(102, 126, 234, 0.3);">
+                                <h5 class="modal-title text-white">添加时间线事件</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="timelineForm">
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">标题 *</label>
+                                        <input type="text" class="form-control" name="title" required
+                                               style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                               placeholder="例如：开始学习数据分析">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">日期 *</label>
+                                        <input type="date" class="form-control" name="date" required
+                                               style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">分类</label>
+                                        <select class="form-select" name="category"
+                                                style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                            <option value="education">学习</option>
+                                            <option value="work">工作</option>
+                                            <option value="project">项目</option>
+                                            <option value="life">生活</option>
+                                            <option value="achievement">成就</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">描述</label>
+                                        <textarea class="form-control" name="description" rows="3"
+                                                  style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                                  placeholder="详细描述这个事件..."></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label text-light">颜色</label>
+                                            <select class="form-select" name="color"
+                                                    style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                <option value="#667eea">蓝色</option>
+                                                <option value="#f093fb">粉色</option>
+                                                <option value="#4facfe">天蓝</option>
+                                                <option value="#43e97b">绿色</option>
+                                                <option value="#fa709a">红色</option>
+                                                <option value="#ffecd2">橙色</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-light">图标</label>
+                                            <select class="form-select" name="icon"
+                                                    style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                <option value="fas fa-graduation-cap">毕业帽</option>
+                                                <option value="fas fa-book">书本</option>
+                                                <option value="fas fa-briefcase">公文包</option>
+                                                <option value="fas fa-code">代码</option>
+                                                <option value="fas fa-trophy">奖杯</option>
+                                                <option value="fas fa-star">星星</option>
+                                                <option value="fas fa-heart">心形</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer" style="border-top: 1px solid rgba(102, 126, 234, 0.3);">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-cool" onclick="saveTimeline()">保存事件</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 移除已存在的模态框
+            const existingModal = document.getElementById('timelineModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // 添加新模态框
+            document.body.insertAdjacentHTML('beforeend', formHtml);
+
+            // 显示模态框
+            const modal = new bootstrap.Modal(document.getElementById('timelineModal'));
+            modal.show();
+        }
+
+        // 保存时间线事件
+        async function saveTimeline() {
+            const form = document.getElementById('timelineForm');
+            const formData = new FormData(form);
+
+            // 验证必填字段
+            const title = formData.get('title').trim();
+            const date = formData.get('date');
+
+            if (!title) {
+                alert('请输入事件标题');
+                return;
+            }
+
+            if (!date) {
+                alert('请选择日期');
+                return;
+            }
+
+            const timelineData = {
+                title: title,
+                date: date,
+                category: formData.get('category'),
+                description: formData.get('description').trim(),
+                color: formData.get('color'),
+                icon: formData.get('icon')
+            };
+
+            try {
+                const response = await fetch('/api/admin/timeline', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(timelineData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('时间线事件保存成功！');
+                    bootstrap.Modal.getInstance(document.getElementById('timelineModal')).hide();
+                    loadTimeline(); // 重新加载时间线列表
+                } else {
+                    alert('保存失败: ' + (result.error || '未知错误'));
+                }
+            } catch (error) {
+                console.error('保存时间线事件失败:', error);
+                alert('保存时间线事件失败: ' + error.message);
+            }
+        }
+
+        // 删除时间线事件
+        async function deleteTimeline(itemId) {
+            if (!confirm('确定要删除这个时间线事件吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/timeline/${itemId}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('时间线事件删除成功！');
+                    loadTimeline(); // 重新加载时间线列表
+                } else {
+                    alert('删除失败: ' + result.error);
+                }
+            } catch (error) {
+                console.error('删除时间线事件失败:', error);
+                alert('删除时间线事件失败');
+            }
+        }
+
+        // 编辑时间线事件
+        function editTimeline(itemId) {
+            alert(`编辑时间线事件功能开发中... (事件ID: ${itemId})`);
+        }
+
+        // 加载友链列表
+        async function loadLinks() {
+            try {
+                const response = await fetch('/api/admin/links', {
+                    credentials: 'same-origin'
+                });
+                const data = await response.json();
+
+                if (data.links) {
+                    const tbody = document.getElementById('linksTableBody');
+                    tbody.innerHTML = '';
+
+                    data.links.forEach(link => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>
+                                <img src="${link.avatar || '/static/default-avatar.png'}"
+                                     alt="${link.name}" class="rounded me-2"
+                                     style="width: 24px; height: 24px;">
+                                ${link.name}
+                            </td>
+                            <td>
+                                <a href="${link.url}" target="_blank" class="text-info">
+                                    ${link.url}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">
+                                    ${getLinkCategoryName(link.category)}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge ${link.is_active ? 'bg-success' : 'bg-secondary'}">
+                                    ${link.is_active ? '启用' : '禁用'}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-cool btn-sm me-1" onclick="editLink(${link.id})">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteLink(${link.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            } catch (error) {
+                console.error('加载友链失败:', error);
+            }
+        }
+
+        // 获取友链分类中文名称
+        function getLinkCategoryName(category) {
+            const categoryMap = {
+                'friend': '朋友',
+                'recommend': '推荐',
+                'tool': '工具',
+                'blog': '博客',
+                'resource': '资源'
+            };
+            return categoryMap[category] || category;
+        }
+
+        // 显示添加友链表单
+        function showAddLinkForm() {
+            const formHtml = `
+                <div class="modal fade" id="linkModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content" style="background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(102, 126, 234, 0.3);">
+                            <div class="modal-header" style="border-bottom: 1px solid rgba(102, 126, 234, 0.3);">
+                                <h5 class="modal-title text-white">添加友情链接</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="linkForm">
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">网站名称 *</label>
+                                        <input type="text" class="form-control" name="name" required
+                                               style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                               placeholder="例如：小明的博客">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">网站链接 *</label>
+                                        <input type="url" class="form-control" name="url" required
+                                               style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                               placeholder="https://example.com">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">网站描述</label>
+                                        <textarea class="form-control" name="description" rows="2"
+                                                  style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                                  placeholder="简单描述这个网站..."></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">头像链接</label>
+                                        <input type="url" class="form-control" name="avatar"
+                                               style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                               placeholder="https://example.com/avatar.jpg">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label text-light">分类</label>
+                                            <select class="form-select" name="category"
+                                                    style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                <option value="friend">朋友</option>
+                                                <option value="recommend">推荐</option>
+                                                <option value="tool">工具</option>
+                                                <option value="blog">博客</option>
+                                                <option value="resource">资源</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-light">排序权重</label>
+                                            <input type="number" class="form-control" name="sort_order" value="0"
+                                                   style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                                   placeholder="数字越大越靠前">
+                                        </div>
+                                    </div>
+                                    <div class="form-check mt-3">
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="isActive" checked>
+                                        <label class="form-check-label text-light" for="isActive">
+                                            启用链接
+                                        </label>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer" style="border-top: 1px solid rgba(102, 126, 234, 0.3);">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-cool" onclick="saveLink()">保存友链</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 移除已存在的模态框
+            const existingModal = document.getElementById('linkModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // 添加新模态框
+            document.body.insertAdjacentHTML('beforeend', formHtml);
+
+            // 显示模态框
+            const modal = new bootstrap.Modal(document.getElementById('linkModal'));
+            modal.show();
+        }
+
+        // 保存友链
+        async function saveLink() {
+            const form = document.getElementById('linkForm');
+            const formData = new FormData(form);
+
+            // 验证必填字段
+            const name = formData.get('name').trim();
+            const url = formData.get('url').trim();
+
+            if (!name) {
+                alert('请输入网站名称');
+                return;
+            }
+
+            if (!url) {
+                alert('请输入网站链接');
+                return;
+            }
+
+            const linkData = {
+                name: name,
+                url: url,
+                description: formData.get('description').trim(),
+                avatar: formData.get('avatar').trim(),
+                category: formData.get('category'),
+                sort_order: parseInt(formData.get('sort_order')) || 0,
+                is_active: formData.has('is_active')
+            };
+
+            try {
+                const response = await fetch('/api/admin/links', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(linkData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('友链保存成功！');
+                    bootstrap.Modal.getInstance(document.getElementById('linkModal')).hide();
+                    loadLinks(); // 重新加载友链列表
+                } else {
+                    alert('保存失败: ' + (result.error || '未知错误'));
+                }
+            } catch (error) {
+                console.error('保存友链失败:', error);
+                alert('保存友链失败: ' + error.message);
+            }
+        }
+
+        // 删除友链
+        async function deleteLink(linkId) {
+            if (!confirm('确定要删除这个友链吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/links/${linkId}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('友链删除成功！');
+                    loadLinks(); // 重新加载友链列表
+                } else {
+                    alert('删除失败: ' + result.error);
+                }
+            } catch (error) {
+                console.error('删除友链失败:', error);
+                alert('删除友链失败');
+            }
+        }
+
+        // 编辑友链
+        function editLink(linkId) {
+            alert(`编辑友链功能开发中... (友链ID: ${linkId})`);
         }
     </script>
 </body>
@@ -5241,6 +5761,110 @@ def api_create_timeline():
     db.session.commit()
 
     return jsonify({'message': '时间线项目创建成功', 'item_id': new_item.id})
+
+@app.route('/api/admin/timeline/<int:item_id>', methods=['DELETE'])
+def api_delete_timeline(item_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    timeline_item = Timeline.query.get_or_404(item_id)
+    db.session.delete(timeline_item)
+    db.session.commit()
+
+    return jsonify({'message': '时间线项目删除成功'})
+
+# 友链管理API
+@app.route('/api/admin/links', methods=['GET'])
+def api_admin_links():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    links = Link.query.order_by(Link.sort_order.desc(), Link.created_at.desc()).all()
+    links_data = []
+    for link in links:
+        links_data.append({
+            'id': link.id,
+            'name': link.name,
+            'url': link.url,
+            'description': link.description,
+            'avatar': link.avatar,
+            'category': link.category,
+            'is_active': link.is_active,
+            'sort_order': link.sort_order,
+            'created_at': link.created_at.strftime('%Y-%m-%d') if link.created_at else ''
+        })
+
+    return jsonify({'links': links_data})
+
+@app.route('/api/admin/links', methods=['POST'])
+def api_create_link():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    try:
+        data = request.get_json()
+
+        if not data:
+            return jsonify({'error': '无效的JSON数据'}), 400
+
+        # 验证必填字段
+        if not data.get('name'):
+            return jsonify({'error': '网站名称不能为空'}), 400
+
+        if not data.get('url'):
+            return jsonify({'error': '网站链接不能为空'}), 400
+
+        new_link = Link(
+            name=data['name'].strip(),
+            url=data['url'].strip(),
+            description=data.get('description', '').strip(),
+            avatar=data.get('avatar', '').strip(),
+            category=data.get('category', 'friend'),
+            is_active=data.get('is_active', True),
+            sort_order=data.get('sort_order', 0),
+            created_at=datetime.now()
+        )
+
+        db.session.add(new_link)
+        db.session.commit()
+
+        return jsonify({'message': '友链创建成功', 'link_id': new_link.id})
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"创建友链错误: {e}")  # 调试用
+        return jsonify({'error': f'创建友链失败: {str(e)}'}), 500
+
+@app.route('/api/admin/links/<int:link_id>', methods=['PUT'])
+def api_update_link(link_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    link = Link.query.get_or_404(link_id)
+    data = request.get_json()
+
+    link.name = data.get('name', link.name)
+    link.url = data.get('url', link.url)
+    link.description = data.get('description', link.description)
+    link.avatar = data.get('avatar', link.avatar)
+    link.category = data.get('category', link.category)
+    link.is_active = data.get('is_active', link.is_active)
+    link.sort_order = data.get('sort_order', link.sort_order)
+
+    db.session.commit()
+
+    return jsonify({'message': '友链更新成功'})
+
+@app.route('/api/admin/links/<int:link_id>', methods=['DELETE'])
+def api_delete_link(link_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    link = Link.query.get_or_404(link_id)
+    db.session.delete(link)
+    db.session.commit()
+
+    return jsonify({'message': '友链删除成功'})
 
 if __name__ == '__main__':
     print("="*60)
