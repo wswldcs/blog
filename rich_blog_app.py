@@ -4714,6 +4714,119 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 </div>
             </div>
         </div>
+
+        <!-- 分类管理 -->
+        <div id="categories" class="admin-section" style="display: none;">
+            <h1 class="text-white mb-4">
+                <i class="fas fa-folder me-2"></i>分类管理
+            </h1>
+
+            <div class="admin-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-white mb-0">文章分类</h5>
+                    <button class="quick-action-btn" onclick="showAddCategoryForm()">
+                        <i class="fas fa-plus me-2"></i>添加分类
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>分类名称</th>
+                                <th>描述</th>
+                                <th>颜色</th>
+                                <th>图标</th>
+                                <th>文章数</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoriesTableBody">
+                            <!-- 分类数据将通过JavaScript加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统设置 -->
+        <div id="settings" class="admin-section" style="display: none;">
+            <h1 class="text-white mb-4">
+                <i class="fas fa-cog me-2"></i>系统设置
+            </h1>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="admin-card">
+                        <h5 class="text-white mb-3">
+                            <i class="fas fa-globe me-2"></i>网站配置
+                        </h5>
+                        <form id="siteConfigForm">
+                            <div class="mb-3">
+                                <label class="form-label text-light">网站标题</label>
+                                <input type="text" class="form-control" name="blog_title" id="blogTitle"
+                                       style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-light">网站副标题</label>
+                                <input type="text" class="form-control" name="blog_subtitle" id="blogSubtitle"
+                                       style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-light">网站描述</label>
+                                <textarea class="form-control" name="blog_description" id="blogDescription" rows="3"
+                                          style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"></textarea>
+                            </div>
+                            <button type="button" class="btn btn-cool" onclick="saveSiteConfig()">
+                                <i class="fas fa-save me-2"></i>保存网站配置
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="admin-card">
+                        <h5 class="text-white mb-3">
+                            <i class="fas fa-key me-2"></i>API配置
+                        </h5>
+                        <form id="apiConfigForm">
+                            <div class="mb-3">
+                                <label class="form-label text-light">天气API密钥</label>
+                                <input type="text" class="form-control" name="weather_api_key" id="weatherApiKey"
+                                       style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                       placeholder="OpenWeatherMap API Key">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-light">IP地理位置API密钥</label>
+                                <input type="text" class="form-control" name="ipapi_key" id="ipapiKey"
+                                       style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                       placeholder="IP-API Key (可选)">
+                            </div>
+                            <button type="button" class="btn btn-cool" onclick="saveApiConfig()">
+                                <i class="fas fa-save me-2"></i>保存API配置
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="admin-card mt-4">
+                        <h5 class="text-white mb-3">
+                            <i class="fas fa-database me-2"></i>数据管理
+                        </h5>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-warning" onclick="exportData()">
+                                <i class="fas fa-download me-2"></i>导出数据
+                            </button>
+                            <button class="btn btn-info" onclick="showImportData()">
+                                <i class="fas fa-upload me-2"></i>导入数据
+                            </button>
+                            <button class="btn btn-danger" onclick="clearCache()">
+                                <i class="fas fa-trash me-2"></i>清理缓存
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -4797,8 +4910,40 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 const data = await response.json();
 
                 if (data.categories) {
-                    // 这里可以渲染分类列表
-                    console.log('分类数据:', data.categories);
+                    const tbody = document.getElementById('categoriesTableBody');
+                    tbody.innerHTML = '';
+
+                    data.categories.forEach(category => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>
+                                <span style="color: ${category.color};">
+                                    <i class="${category.icon} me-2"></i>${category.name}
+                                </span>
+                            </td>
+                            <td class="text-muted">${category.description || '无描述'}</td>
+                            <td>
+                                <span class="badge" style="background-color: ${category.color}; color: white;">
+                                    ${category.color}
+                                </span>
+                            </td>
+                            <td>
+                                <i class="${category.icon}" style="color: ${category.color};"></i>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">${category.post_count} 篇</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-cool btn-sm me-1" onclick="editCategory(${category.id})" title="编辑分类">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteCategory(${category.id})" title="删除分类">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
                 }
             } catch (error) {
                 console.error('加载分类失败:', error);
@@ -5846,6 +5991,186 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 alert('删除项目失败');
             }
         }
+
+        // 显示添加分类表单
+        function showAddCategoryForm() {
+            const formHtml = `
+                <div class="modal fade" id="categoryModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content" style="background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(102, 126, 234, 0.3);">
+                            <div class="modal-header" style="border-bottom: 1px solid rgba(102, 126, 234, 0.3);">
+                                <h5 class="modal-title text-white">添加分类</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="categoryForm">
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">分类名称 *</label>
+                                        <input type="text" class="form-control" name="name" required
+                                               style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                               placeholder="例如：技术分享">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-light">分类描述</label>
+                                        <textarea class="form-control" name="description" rows="2"
+                                                  style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                                  placeholder="简单描述这个分类..."></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label text-light">分类颜色</label>
+                                            <select class="form-select" name="color"
+                                                    style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                <option value="#3b82f6">蓝色</option>
+                                                <option value="#8b5cf6">紫色</option>
+                                                <option value="#10b981">绿色</option>
+                                                <option value="#f59e0b">橙色</option>
+                                                <option value="#ef4444">红色</option>
+                                                <option value="#06b6d4">青色</option>
+                                                <option value="#84cc16">草绿</option>
+                                                <option value="#f97316">深橙</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label text-light">分类图标</label>
+                                            <select class="form-select" name="icon"
+                                                    style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                <option value="fas fa-folder">文件夹</option>
+                                                <option value="fas fa-chart-line">图表</option>
+                                                <option value="fas fa-brain">大脑</option>
+                                                <option value="fas fa-chart-bar">柱状图</option>
+                                                <option value="fas fa-graduation-cap">毕业帽</option>
+                                                <option value="fas fa-project-diagram">项目图</option>
+                                                <option value="fas fa-briefcase">公文包</option>
+                                                <option value="fas fa-code">代码</option>
+                                                <option value="fas fa-database">数据库</option>
+                                                <option value="fas fa-laptop-code">笔记本</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer" style="border-top: 1px solid rgba(102, 126, 234, 0.3);">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                <button type="button" class="btn btn-cool" onclick="saveCategory()">保存分类</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 移除已存在的模态框
+            const existingModal = document.getElementById('categoryModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // 添加新模态框
+            document.body.insertAdjacentHTML('beforeend', formHtml);
+
+            // 显示模态框
+            const modal = new bootstrap.Modal(document.getElementById('categoryModal'));
+            modal.show();
+        }
+
+        // 保存分类
+        async function saveCategory() {
+            const form = document.getElementById('categoryForm');
+            const formData = new FormData(form);
+
+            // 验证必填字段
+            const name = formData.get('name').trim();
+
+            if (!name) {
+                alert('请输入分类名称');
+                return;
+            }
+
+            const categoryData = {
+                name: name,
+                description: formData.get('description').trim(),
+                color: formData.get('color'),
+                icon: formData.get('icon')
+            };
+
+            try {
+                const response = await fetch('/api/admin/categories', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(categoryData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('分类保存成功！');
+                    bootstrap.Modal.getInstance(document.getElementById('categoryModal')).hide();
+                    loadCategories(); // 重新加载分类列表
+                } else {
+                    alert('保存失败: ' + (result.error || '未知错误'));
+                }
+            } catch (error) {
+                console.error('保存分类失败:', error);
+                alert('保存分类失败: ' + error.message);
+            }
+        }
+
+        // 编辑分类
+        function editCategory(categoryId) {
+            alert(`编辑分类功能开发中... (分类ID: ${categoryId})`);
+        }
+
+        // 删除分类
+        async function deleteCategory(categoryId) {
+            if (!confirm('确定要删除这个分类吗？删除后该分类下的文章将变为无分类状态。')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/categories/${categoryId}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('分类删除成功！');
+                    loadCategories(); // 重新加载分类列表
+                } else {
+                    alert('删除失败: ' + result.error);
+                }
+            } catch (error) {
+                console.error('删除分类失败:', error);
+                alert('删除分类失败');
+            }
+        }
+
+        // 系统设置功能
+        function saveSiteConfig() {
+            alert('网站配置保存功能开发中...');
+        }
+
+        function saveApiConfig() {
+            alert('API配置保存功能开发中...');
+        }
+
+        function exportData() {
+            alert('数据导出功能开发中...');
+        }
+
+        function showImportData() {
+            alert('数据导入功能开发中...');
+        }
+
+        function clearCache() {
+            if (confirm('确定要清理缓存吗？')) {
+                alert('缓存清理功能开发中...');
+            }
+        }
     </script>
 </body>
 </html>
@@ -6002,6 +6327,23 @@ def api_create_category():
     db.session.commit()
 
     return jsonify({'message': '分类创建成功', 'category_id': new_category.id})
+
+@app.route('/api/admin/categories/<int:category_id>', methods=['DELETE'])
+def api_delete_category(category_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    category = Category.query.get_or_404(category_id)
+
+    # 将该分类下的文章设为无分类
+    posts = Post.query.filter_by(category_id=category_id).all()
+    for post in posts:
+        post.category_id = None
+
+    db.session.delete(category)
+    db.session.commit()
+
+    return jsonify({'message': '分类删除成功'})
 
 # 个人信息管理API
 @app.route('/api/admin/profile', methods=['GET'])
