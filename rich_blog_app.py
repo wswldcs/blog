@@ -8,6 +8,7 @@
 import os
 import json
 import requests
+import time
 from datetime import datetime, timedelta
 from flask import Flask, render_template_string, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -858,6 +859,7 @@ def login():
 
         if user and user.check_password(password):
             login_user(user)
+            session['admin_logged_in'] = True  # 同时设置session
             return redirect(url_for('admin_dashboard'))
         else:
             flash('用户名或密码错误')
@@ -896,6 +898,7 @@ def admin_dashboard():
 @login_required
 def logout():
     logout_user()
+    session.pop('admin_logged_in', None)  # 同时清除session
     return redirect(url_for('index'))
 
 @app.route('/health')
@@ -4175,6 +4178,7 @@ ADMIN_DASHBOARD_TEMPLATE = '''
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     ''' + BASE_STYLES + '''
     <style>
         .admin-sidebar {
@@ -4603,6 +4607,8 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 loadPosts();
             } else if (sectionId === 'categories') {
                 loadCategories();
+            } else if (sectionId === 'profile') {
+                loadProfile();
             }
         }
 
@@ -4871,7 +4877,7 @@ def api_admin_posts():
     if not session.get('admin_logged_in'):
         return jsonify({'error': '未授权'}), 401
 
-    posts = BlogPost.query.order_by(BlogPost.created_at.desc()).all()
+    posts = Post.query.order_by(Post.created_at.desc()).all()
     posts_data = []
     for post in posts:
         posts_data.append({
@@ -4898,11 +4904,11 @@ def api_create_post():
     slug = ''.join(c for c in slug if c.isalnum() or c == '-')
 
     # 检查slug是否已存在
-    existing_post = BlogPost.query.filter_by(slug=slug).first()
+    existing_post = Post.query.filter_by(slug=slug).first()
     if existing_post:
         slug = f"{slug}-{int(time.time())}"
 
-    new_post = BlogPost(
+    new_post = Post(
         title=data['title'],
         slug=slug,
         content=data['content'],
@@ -4923,7 +4929,7 @@ def api_update_post(post_id):
     if not session.get('admin_logged_in'):
         return jsonify({'error': '未授权'}), 401
 
-    post = BlogPost.query.get_or_404(post_id)
+    post = Post.query.get_or_404(post_id)
     data = request.get_json()
 
     post.title = data['title']
@@ -4942,7 +4948,7 @@ def api_delete_post(post_id):
     if not session.get('admin_logged_in'):
         return jsonify({'error': '未授权'}), 401
 
-    post = BlogPost.query.get_or_404(post_id)
+    post = Post.query.get_or_404(post_id)
     db.session.delete(post)
     db.session.commit()
 
