@@ -3888,121 +3888,744 @@ POST_TEMPLATE = '''
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ post.title }} - {{ config.BLOG_TITLE }}</title>
+    <meta name="description" content="{{ post.summary or post.title }}">
+    <meta name="author" content="{{ config.AUTHOR_NAME }}">
+
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Highlight.js -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css" rel="stylesheet">
+
     <style>
-        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
-        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
-        .post-content {
-            background: white; border-radius: 15px; padding: 3rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); line-height: 1.8;
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --data-blue: #3b82f6;
+            --data-purple: #8b5cf6;
+            --data-green: #10b981;
+            --data-orange: #f59e0b;
+            --data-red: #ef4444;
+            --success-color: #4ecdc4;
+            --warning-color: #ffe66d;
+            --danger-color: #ff6b6b;
+            --dark-color: #1e293b;
+            --light-color: #f8fafc;
+            --gradient-primary: linear-gradient(135deg, var(--data-blue) 0%, var(--data-purple) 100%);
+            --gradient-accent: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
+            --gradient-data: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px rgba(0,0,0,0.1);
+            --shadow-glow: 0 0 20px rgba(102, 126, 234, 0.3);
         }
-        .post-content h1, .post-content h2, .post-content h3 {
-            color: #2c3e50; margin-top: 2rem; margin-bottom: 1rem;
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .post-content pre {
-            background: #f8f9fa; border-radius: 10px; padding: 1rem;
-            border-left: 4px solid #667eea;
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #1e293b;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
         }
+
+        /* 粒子背景 */
+        .particles-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        }
+
+        /* 超炫酷导航栏 */
+        .navbar {
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            padding: 1rem 0;
+            position: fixed !important;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white !important;
+            text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            color: var(--data-blue) !important;
+            text-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+            transform: scale(1.05);
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            margin: 0 0.5rem;
+            padding: 0.5rem 1rem !important;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .navbar-nav .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .navbar-nav .nav-link:hover::before {
+            left: 0;
+        }
+
+        /* 页面内容顶部间距 */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem 0;
+        }
+
+        /* 文章内容样式 */
         .post-meta {
-            background: white; border-radius: 15px; padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 2rem;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
         }
+
+        .post-meta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+        }
+
+        .post-meta h1 {
+            color: white;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            font-size: 2.5rem;
+            line-height: 1.2;
+            background: linear-gradient(45deg, #ffffff, #e0e7ff, #c7d2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .post-content {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: var(--shadow-xl);
+            line-height: 1.8;
+            color: #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .post-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-accent);
+        }
+
+        .post-content h1,
+        .post-content h2,
+        .post-content h3,
+        .post-content h4,
+        .post-content h5,
+        .post-content h6 {
+            color: white;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .post-content h1 { font-size: 2.2rem; }
+        .post-content h2 { font-size: 1.8rem; }
+        .post-content h3 { font-size: 1.5rem; }
+
+        .post-content h2::before {
+            content: '';
+            position: absolute;
+            left: -1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 1.5rem;
+            background: var(--gradient-primary);
+            border-radius: 2px;
+        }
+
+        .post-content p {
+            margin-bottom: 1.5rem;
+            color: #cbd5e1;
+        }
+
+        .post-content pre {
+            background: rgba(15, 23, 42, 0.9) !important;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .post-content pre::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 2px 0 0 2px;
+        }
+
+        .post-content code {
+            background: rgba(102, 126, 234, 0.2);
+            color: #e0e7ff;
+            padding: 0.2rem 0.4rem;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .post-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        .post-content blockquote {
+            border-left: 4px solid var(--data-blue);
+            background: rgba(59, 130, 246, 0.1);
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 10px 10px 0;
+            color: #e0e7ff;
+            font-style: italic;
+        }
+
+        .post-content ul, .post-content ol {
+            padding-left: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .post-content li {
+            margin-bottom: 0.5rem;
+            color: #cbd5e1;
+        }
+
+        .post-content a {
+            color: var(--data-blue);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .post-content a:hover {
+            color: var(--data-purple);
+            text-decoration: underline;
+        }
+
+        .post-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .post-content th,
+        .post-content td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .post-content th {
+            background: var(--gradient-primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* 标签和分类样式 */
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            margin: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .badge:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* 相关文章样式 */
         .related-post {
-            background: white; border-radius: 10px; padding: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 1rem;
-            text-decoration: none; color: inherit; display: block;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            text-decoration: none;
+            color: #e2e8f0;
+            display: block;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
+
+        .related-post::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: all 0.3s ease;
+        }
+
         .related-post:hover {
-            transform: translateY(-3px); text-decoration: none; color: inherit;
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-glow);
+            text-decoration: none;
+            color: white;
+            border-color: rgba(102, 126, 234, 0.6);
+        }
+
+        .related-post:hover::before {
+            left: 100%;
+        }
+
+        .related-post h6 {
+            color: white;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        /* 评论区样式 */
+        .comments-section {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 3rem;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .comments-section h3 {
+            color: white;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .comment-card {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .comment-card:hover {
+            border-color: rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .comment-author {
+            color: var(--data-blue);
+            font-weight: 600;
+        }
+
+        .comment-content {
+            color: #cbd5e1;
+            margin-top: 1rem;
+            line-height: 1.6;
+        }
+
+        .comment-date {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        /* 侧边栏样式 */
+        .sidebar-card {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-accent);
+        }
+
+        .sidebar-card h5 {
+            color: white;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            border-radius: 25px;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--data-blue);
+            color: var(--data-blue);
+            background: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--data-blue);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-outline-secondary {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.8);
+            background: transparent;
+        }
+
+        .btn-outline-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .post-meta h1 {
+                font-size: 2rem;
+            }
+
+            .post-content {
+                padding: 2rem;
+            }
+
+            .post-meta,
+            .post-content {
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
         }
     </style>
 </head>
 <body>
+    <!-- 粒子背景 -->
+    <div class="particles-bg"></div>
+
+    <!-- 导航栏 -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('index') }}">
                 <i class="fas fa-blog me-2"></i>{{ config.BLOG_TITLE }}
             </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="{{ url_for('index') }}">首页</a>
-                <a class="nav-link" href="{{ url_for('blog') }}">博客</a>
-                <a class="nav-link" href="{{ url_for('projects') }}">项目</a>
-                <a class="nav-link" href="{{ url_for('about') }}">关于</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">
+                            <i class="fas fa-home me-1"></i>首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('blog') }}">
+                            <i class="fas fa-blog me-1"></i>博客
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('projects') }}">
+                            <i class="fas fa-code me-1"></i>项目
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('timeline') }}">
+                            <i class="fas fa-history me-1"></i>历程
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('links') }}">
+                            <i class="fas fa-link me-1"></i>友链
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('about') }}">
+                            <i class="fas fa-user me-1"></i>关于
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container py-5">
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="post-meta">
-                    <h1>{{ post.title }}</h1>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-muted">
-                                <i class="fas fa-calendar me-1"></i>{{ post.created_at.strftime('%Y年%m月%d日') }}
-                                <i class="fas fa-eye ms-3 me-1"></i>{{ post.view_count }} 次浏览
-                                {% if post.category %}
-                                <span class="badge ms-3" style="background-color: {{ post.category.color }};">
-                                    <i class="{{ post.category.icon }} me-1"></i>{{ post.category.name }}
-                                </span>
-                                {% endif %}
+    <!-- 主要内容 -->
+    <div class="main-content">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- 文章元信息 -->
+                    <div class="post-meta fade-in-up">
+                        <h1>{{ post.title }}</h1>
+                        <div class="d-flex flex-wrap align-items-center text-light opacity-75 mb-3">
+                            <span class="me-4">
+                                <i class="fas fa-calendar me-2"></i>{{ post.created_at.strftime('%Y年%m月%d日') }}
                             </span>
+                            <span class="me-4">
+                                <i class="fas fa-eye me-2"></i>{{ post.view_count }} 次浏览
+                            </span>
+                            <span class="me-4">
+                                <i class="fas fa-user me-2"></i>{{ post.author.username }}
+                            </span>
+                            {% if post.category %}
+                            <span class="badge" style="background-color: {{ post.category.color }};">
+                                <i class="{{ post.category.icon }} me-1"></i>{{ post.category.name }}
+                            </span>
+                            {% endif %}
                         </div>
+                        {% if post.tags %}
+                        <div class="mt-3">
+                            <i class="fas fa-tags me-2 text-light opacity-75"></i>
+                            {% for tag in post.tags %}
+                            <span class="badge" style="background-color: {{ tag.color }};">
+                                {{ tag.name }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
-                    {% if post.tags %}
-                    <div class="mt-3">
-                        {% for tag in post.tags %}
-                        <span class="badge me-1" style="background-color: {{ tag.color }};">
-                            {{ tag.name }}
-                        </span>
+
+                    <!-- 文章内容 -->
+                    <div class="post-content fade-in-up">
+                        {{ post.get_html_content() | safe }}
+                    </div>
+
+                    <!-- 评论区 -->
+                    {% if comments %}
+                    <div class="comments-section fade-in-up">
+                        <h3>
+                            <i class="fas fa-comments me-2"></i>评论 ({{ comments|length }})
+                        </h3>
+                        {% for comment in comments %}
+                        <div class="comment-card">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="comment-author">
+                                    <i class="fas fa-user-circle me-2"></i>{{ comment.author_name }}
+                                </div>
+                                <div class="comment-date">
+                                    <i class="fas fa-clock me-1"></i>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                </div>
+                            </div>
+                            <div class="comment-content">
+                                {{ comment.content }}
+                            </div>
+                        </div>
                         {% endfor %}
                     </div>
                     {% endif %}
                 </div>
 
-                <div class="post-content">
-                    {{ post.get_html_content() | safe }}
-                </div>
-
-                <!-- 评论区 -->
-                <div class="mt-5">
-                    <h3>评论 ({{ comments|length }})</h3>
-                    {% for comment in comments %}
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <strong>{{ comment.author_name }}</strong>
-                                <small class="text-muted">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                <!-- 侧边栏 -->
+                <div class="col-lg-4">
+                    <!-- 相关文章 -->
+                    {% if related_posts %}
+                    <div class="sidebar-card fade-in-up">
+                        <h5>
+                            <i class="fas fa-newspaper me-2"></i>相关文章
+                        </h5>
+                        {% for related in related_posts %}
+                        <a href="{{ url_for('post', slug=related.slug) }}" class="related-post">
+                            <h6>{{ related.title }}</h6>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>{{ related.created_at.strftime('%m-%d') }}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="fas fa-eye me-1"></i>{{ related.view_count }}
+                                </small>
                             </div>
-                            <p class="mt-2">{{ comment.content }}</p>
-                        </div>
+                        </a>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
-                </div>
-            </div>
+                    {% endif %}
 
-            <div class="col-lg-4">
-                <!-- 相关文章 -->
-                {% if related_posts %}
-                <div class="mb-4">
-                    <h5 class="mb-3">相关文章</h5>
-                    {% for related in related_posts %}
-                    <a href="{{ url_for('post', slug=related.slug) }}" class="related-post">
-                        <h6>{{ related.title }}</h6>
-                        <small class="text-muted">{{ related.created_at.strftime('%m-%d') }}</small>
-                    </a>
-                    {% endfor %}
+                    <!-- 返回博客列表 -->
+                    <div class="sidebar-card fade-in-up">
+                        <h5>
+                            <i class="fas fa-arrow-left me-2"></i>导航
+                        </h5>
+                        <a href="{{ url_for('blog') }}" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-list me-2"></i>返回博客列表
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-home me-2"></i>返回首页
+                        </a>
+                    </div>
                 </div>
-                {% endif %}
             </div>
         </div>
     </div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Highlight.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-    <script>hljs.highlightAll();</script>
+
+    <script>
+        // 代码高亮
+        hljs.highlightAll();
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // 创建粒子效果
+        function createParticles() {
+            const particlesContainer = document.querySelector('.particles-bg');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+
+                // 随机大小和位置
+                const size = Math.random() * 4 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+
+                // 随机动画延迟
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 页面加载完成后创建粒子
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+        });
+
+        // 平滑滚动到锚点
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
 '''
