@@ -8,9 +8,11 @@ import os
 from flask import Flask
 
 print("="*60)
-print("🚀 启动Railway主应用 (main.py)")
+print("🚀 启动Railway主应用 (main.py) - 版本2.0")
 print("✅ 这不是railway_simple.py")
 print("✅ 这是一个简单的Flask应用，不连接数据库")
+print("✅ railway_simple.py已被删除")
+print("✅ 强制使用新的Procfile配置")
 print("="*60)
 
 # 创建Flask应用
