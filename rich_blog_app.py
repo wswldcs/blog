@@ -5667,8 +5667,168 @@ ADMIN_DASHBOARD_TEMPLATE = '''
         }
 
         // 编辑时间线事件
-        function editTimeline(itemId) {
-            alert(`编辑时间线事件功能开发中... (事件ID: ${itemId})`);
+        async function editTimeline(itemId) {
+            try {
+                // 获取时间线事件详情
+                const response = await fetch(`/api/admin/timeline/${itemId}`, {
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    alert('获取时间线事件信息失败');
+                    return;
+                }
+
+                const data = await response.json();
+                const item = data.item;
+
+                const formHtml = `
+                    <div class="modal fade" id="editTimelineModal" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content" style="background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(102, 126, 234, 0.3);">
+                                <div class="modal-header" style="border-bottom: 1px solid rgba(102, 126, 234, 0.3);">
+                                    <h5 class="modal-title text-white">编辑时间线事件</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="editTimelineForm">
+                                        <input type="hidden" name="item_id" value="${item.id}">
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">事件标题 *</label>
+                                            <input type="text" class="form-control" name="title" required value="${item.title}"
+                                                   style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">事件日期 *</label>
+                                            <input type="date" class="form-control" name="date" required value="${item.date}"
+                                                   style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">事件描述</label>
+                                            <textarea class="form-control" name="description" rows="3"
+                                                      style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">${item.description || ''}</textarea>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="form-label text-light">事件分类</label>
+                                                <select class="form-select" name="category"
+                                                        style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                    <option value="education" ${item.category === 'education' ? 'selected' : ''}>📚 学习成长</option>
+                                                    <option value="work" ${item.category === 'work' ? 'selected' : ''}>💼 实习工作</option>
+                                                    <option value="project" ${item.category === 'project' ? 'selected' : ''}>🚀 项目实战</option>
+                                                    <option value="competition" ${item.category === 'competition' ? 'selected' : ''}>🏆 竞赛获奖</option>
+                                                    <option value="skill" ${item.category === 'skill' ? 'selected' : ''}>💡 技能提升</option>
+                                                    <option value="life" ${item.category === 'life' ? 'selected' : ''}>🌟 重要时刻</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label text-light">颜色主题</label>
+                                                <select class="form-select" name="color"
+                                                        style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                    <option value="#3b82f6" ${item.color === '#3b82f6' ? 'selected' : ''}>蓝色</option>
+                                                    <option value="#8b5cf6" ${item.color === '#8b5cf6' ? 'selected' : ''}>紫色</option>
+                                                    <option value="#10b981" ${item.color === '#10b981' ? 'selected' : ''}>绿色</option>
+                                                    <option value="#f59e0b" ${item.color === '#f59e0b' ? 'selected' : ''}>橙色</option>
+                                                    <option value="#ef4444" ${item.color === '#ef4444' ? 'selected' : ''}>红色</option>
+                                                    <option value="#06b6d4" ${item.color === '#06b6d4' ? 'selected' : ''}>青色</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <label class="form-label text-light">图标</label>
+                                            <select class="form-select" name="icon"
+                                                    style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                <option value="fas fa-graduation-cap" ${item.icon === 'fas fa-graduation-cap' ? 'selected' : ''}>🎓 毕业帽</option>
+                                                <option value="fas fa-briefcase" ${item.icon === 'fas fa-briefcase' ? 'selected' : ''}>💼 公文包</option>
+                                                <option value="fas fa-code" ${item.icon === 'fas fa-code' ? 'selected' : ''}>💻 代码</option>
+                                                <option value="fas fa-trophy" ${item.icon === 'fas fa-trophy' ? 'selected' : ''}>🏆 奖杯</option>
+                                                <option value="fas fa-lightbulb" ${item.icon === 'fas fa-lightbulb' ? 'selected' : ''}>💡 灯泡</option>
+                                                <option value="fas fa-star" ${item.icon === 'fas fa-star' ? 'selected' : ''}>⭐ 星星</option>
+                                                <option value="fas fa-heart" ${item.icon === 'fas fa-heart' ? 'selected' : ''}>❤️ 心形</option>
+                                            </select>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer" style="border-top: 1px solid rgba(102, 126, 234, 0.3);">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                    <button type="button" class="btn btn-cool" onclick="updateTimelineItem()">更新事件</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // 移除已存在的模态框
+                const existingModal = document.getElementById('editTimelineModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+
+                // 添加新模态框
+                document.body.insertAdjacentHTML('beforeend', formHtml);
+
+                // 显示模态框
+                const modal = new bootstrap.Modal(document.getElementById('editTimelineModal'));
+                modal.show();
+
+            } catch (error) {
+                console.error('编辑时间线事件失败:', error);
+                alert('编辑时间线事件失败: ' + error.message);
+            }
+        }
+
+        // 更新时间线事件
+        async function updateTimelineItem() {
+            const form = document.getElementById('editTimelineForm');
+            const formData = new FormData(form);
+
+            // 验证必填字段
+            const title = formData.get('title').trim();
+            const date = formData.get('date');
+            const itemId = formData.get('item_id');
+
+            if (!title) {
+                alert('请输入事件标题');
+                return;
+            }
+
+            if (!date) {
+                alert('请选择事件日期');
+                return;
+            }
+
+            const itemData = {
+                title: title,
+                date: date,
+                description: formData.get('description').trim(),
+                category: formData.get('category'),
+                color: formData.get('color'),
+                icon: formData.get('icon')
+            };
+
+            try {
+                const response = await fetch(`/api/admin/timeline/${itemId}`, {
+                    method: 'PUT',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(itemData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('时间线事件更新成功！');
+                    bootstrap.Modal.getInstance(document.getElementById('editTimelineModal')).hide();
+                    loadTimeline(); // 重新加载时间线列表
+                } else {
+                    alert('更新失败: ' + (result.error || '未知错误'));
+                }
+            } catch (error) {
+                console.error('更新时间线事件失败:', error);
+                alert('更新时间线事件失败: ' + error.message);
+            }
         }
 
         // 加载友链列表
@@ -6137,10 +6297,7 @@ ADMIN_DASHBOARD_TEMPLATE = '''
             }
         }
 
-        // 编辑文章
-        function editPost(postId) {
-            alert(`编辑文章功能开发中... (文章ID: ${postId})`);
-        }
+
 
         // 删除文章
         async function deletePost(postId) {
@@ -6621,8 +6778,148 @@ ADMIN_DASHBOARD_TEMPLATE = '''
         }
 
         // 编辑分类
-        function editCategory(categoryId) {
-            alert(`编辑分类功能开发中... (分类ID: ${categoryId})`);
+        async function editCategory(categoryId) {
+            try {
+                // 获取分类详情
+                const response = await fetch(`/api/admin/categories/${categoryId}`, {
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    alert('获取分类信息失败');
+                    return;
+                }
+
+                const data = await response.json();
+                const category = data.category;
+
+                const formHtml = `
+                    <div class="modal fade" id="editCategoryModal" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content" style="background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(102, 126, 234, 0.3);">
+                                <div class="modal-header" style="border-bottom: 1px solid rgba(102, 126, 234, 0.3);">
+                                    <h5 class="modal-title text-white">编辑分类</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="editCategoryForm">
+                                        <input type="hidden" name="category_id" value="${category.id}">
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">分类名称 *</label>
+                                            <input type="text" class="form-control" name="name" required value="${category.name}"
+                                                   style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">分类描述</label>
+                                            <textarea class="form-control" name="description" rows="2"
+                                                      style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">${category.description || ''}</textarea>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label class="form-label text-light">分类颜色</label>
+                                                <select class="form-select" name="color"
+                                                        style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                    <option value="#3b82f6" ${category.color === '#3b82f6' ? 'selected' : ''}>蓝色</option>
+                                                    <option value="#8b5cf6" ${category.color === '#8b5cf6' ? 'selected' : ''}>紫色</option>
+                                                    <option value="#10b981" ${category.color === '#10b981' ? 'selected' : ''}>绿色</option>
+                                                    <option value="#f59e0b" ${category.color === '#f59e0b' ? 'selected' : ''}>橙色</option>
+                                                    <option value="#ef4444" ${category.color === '#ef4444' ? 'selected' : ''}>红色</option>
+                                                    <option value="#06b6d4" ${category.color === '#06b6d4' ? 'selected' : ''}>青色</option>
+                                                    <option value="#84cc16" ${category.color === '#84cc16' ? 'selected' : ''}>草绿</option>
+                                                    <option value="#f97316" ${category.color === '#f97316' ? 'selected' : ''}>深橙</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label text-light">分类图标</label>
+                                                <select class="form-select" name="icon"
+                                                        style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                                    <option value="fas fa-folder" ${category.icon === 'fas fa-folder' ? 'selected' : ''}>文件夹</option>
+                                                    <option value="fas fa-chart-line" ${category.icon === 'fas fa-chart-line' ? 'selected' : ''}>图表</option>
+                                                    <option value="fas fa-brain" ${category.icon === 'fas fa-brain' ? 'selected' : ''}>大脑</option>
+                                                    <option value="fas fa-chart-bar" ${category.icon === 'fas fa-chart-bar' ? 'selected' : ''}>柱状图</option>
+                                                    <option value="fas fa-graduation-cap" ${category.icon === 'fas fa-graduation-cap' ? 'selected' : ''}>毕业帽</option>
+                                                    <option value="fas fa-project-diagram" ${category.icon === 'fas fa-project-diagram' ? 'selected' : ''}>项目图</option>
+                                                    <option value="fas fa-briefcase" ${category.icon === 'fas fa-briefcase' ? 'selected' : ''}>公文包</option>
+                                                    <option value="fas fa-code" ${category.icon === 'fas fa-code' ? 'selected' : ''}>代码</option>
+                                                    <option value="fas fa-database" ${category.icon === 'fas fa-database' ? 'selected' : ''}>数据库</option>
+                                                    <option value="fas fa-laptop-code" ${category.icon === 'fas fa-laptop-code' ? 'selected' : ''}>笔记本</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer" style="border-top: 1px solid rgba(102, 126, 234, 0.3);">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                    <button type="button" class="btn btn-cool" onclick="updateCategory()">更新分类</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // 移除已存在的模态框
+                const existingModal = document.getElementById('editCategoryModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+
+                // 添加新模态框
+                document.body.insertAdjacentHTML('beforeend', formHtml);
+
+                // 显示模态框
+                const modal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
+                modal.show();
+
+            } catch (error) {
+                console.error('编辑分类失败:', error);
+                alert('编辑分类失败: ' + error.message);
+            }
+        }
+
+        // 更新分类
+        async function updateCategory() {
+            const form = document.getElementById('editCategoryForm');
+            const formData = new FormData(form);
+
+            // 验证必填字段
+            const name = formData.get('name').trim();
+            const categoryId = formData.get('category_id');
+
+            if (!name) {
+                alert('请输入分类名称');
+                return;
+            }
+
+            const categoryData = {
+                name: name,
+                description: formData.get('description').trim(),
+                color: formData.get('color'),
+                icon: formData.get('icon')
+            };
+
+            try {
+                const response = await fetch(`/api/admin/categories/${categoryId}`, {
+                    method: 'PUT',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(categoryData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('分类更新成功！');
+                    bootstrap.Modal.getInstance(document.getElementById('editCategoryModal')).hide();
+                    loadCategories(); // 重新加载分类列表
+                } else {
+                    alert('更新失败: ' + (result.error || '未知错误'));
+                }
+            } catch (error) {
+                console.error('更新分类失败:', error);
+                alert('更新分类失败: ' + error.message);
+            }
         }
 
         // 删除分类
@@ -6833,6 +7130,23 @@ def api_admin_categories():
 
     return jsonify({'categories': categories_data})
 
+@app.route('/api/admin/categories/<int:category_id>', methods=['GET'])
+def api_get_category(category_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    category = Category.query.get_or_404(category_id)
+    category_data = {
+        'id': category.id,
+        'name': category.name,
+        'description': category.description,
+        'color': category.color,
+        'icon': category.icon,
+        'post_count': category.posts.count()
+    }
+
+    return jsonify({'category': category_data})
+
 @app.route('/api/admin/categories', methods=['POST'])
 def api_create_category():
     if not session.get('admin_logged_in'):
@@ -6851,6 +7165,24 @@ def api_create_category():
     db.session.commit()
 
     return jsonify({'message': '分类创建成功', 'category_id': new_category.id})
+
+@app.route('/api/admin/categories/<int:category_id>', methods=['PUT'])
+def api_update_category(category_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    category = Category.query.get_or_404(category_id)
+    data = request.get_json()
+
+    # 更新分类信息
+    category.name = data.get('name', category.name)
+    category.description = data.get('description', category.description)
+    category.color = data.get('color', category.color)
+    category.icon = data.get('icon', category.icon)
+
+    db.session.commit()
+
+    return jsonify({'message': '分类更新成功', 'category_id': category.id})
 
 @app.route('/api/admin/categories/<int:category_id>', methods=['DELETE'])
 def api_delete_category(category_id):
@@ -7024,6 +7356,24 @@ def api_admin_timeline():
 
     return jsonify({'timeline': timeline_data})
 
+@app.route('/api/admin/timeline/<int:item_id>', methods=['GET'])
+def api_get_timeline_item(item_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    timeline_item = Timeline.query.get_or_404(item_id)
+    item_data = {
+        'id': timeline_item.id,
+        'title': timeline_item.title,
+        'description': timeline_item.description,
+        'date': timeline_item.date.strftime('%Y-%m-%d'),
+        'category': timeline_item.category,
+        'color': timeline_item.color,
+        'icon': timeline_item.icon
+    }
+
+    return jsonify({'item': item_data})
+
 @app.route('/api/admin/timeline', methods=['POST'])
 def api_create_timeline():
     if not session.get('admin_logged_in'):
@@ -7044,6 +7394,26 @@ def api_create_timeline():
     db.session.commit()
 
     return jsonify({'message': '时间线项目创建成功', 'item_id': new_item.id})
+
+@app.route('/api/admin/timeline/<int:item_id>', methods=['PUT'])
+def api_update_timeline_item(item_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    timeline_item = Timeline.query.get_or_404(item_id)
+    data = request.get_json()
+
+    # 更新时间线项目信息
+    timeline_item.title = data.get('title', timeline_item.title)
+    timeline_item.description = data.get('description', timeline_item.description)
+    timeline_item.date = datetime.strptime(data.get('date'), '%Y-%m-%d').date() if data.get('date') else timeline_item.date
+    timeline_item.category = data.get('category', timeline_item.category)
+    timeline_item.color = data.get('color', timeline_item.color)
+    timeline_item.icon = data.get('icon', timeline_item.icon)
+
+    db.session.commit()
+
+    return jsonify({'message': '时间线项目更新成功', 'item_id': timeline_item.id})
 
 @app.route('/api/admin/timeline/<int:item_id>', methods=['DELETE'])
 def api_delete_timeline(item_id):
