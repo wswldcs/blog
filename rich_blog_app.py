@@ -2794,114 +2794,251 @@ PROJECTS_TEMPLATE = '''
     <title>项目展示 - {{ config.BLOG_TITLE }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    ''' + BASE_STYLES + '''
     <style>
-        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
-        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        /* 项目卡片特殊样式 */
         .project-card {
-            background: white; border-radius: 15px; padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s ease; height: 100%;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
         }
-        .project-card:hover { transform: translateY(-10px); }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+        }
+
+        .project-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .project-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-glow);
+        }
+
         .tech-badge {
-            background: #f8f9fa; color: #495057; padding: 0.25rem 0.75rem;
-            border-radius: 50px; font-size: 0.875rem; margin: 0.25rem;
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            margin: 0.25rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .tech-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .project-status {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-progress {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-planned {
+            background: rgba(107, 114, 128, 0.2);
+            color: #6b7280;
+            border: 1px solid rgba(107, 114, 128, 0.3);
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    ''' + NAVBAR_HTML + '''
+
+    <!-- 主要内容区域 -->
+    <div class="main-content">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-blog me-2"></i>{{ config.BLOG_TITLE }}
-            </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="{{ url_for('index') }}">首页</a>
-                <a class="nav-link" href="{{ url_for('blog') }}">博客</a>
-                <a class="nav-link" href="{{ url_for('projects') }}">项目</a>
-                <a class="nav-link" href="{{ url_for('about') }}">关于</a>
+            <h1 class="page-title fade-in-up">💻 数据分析项目作品集</h1>
+            <p class="text-center text-light opacity-75 mb-5 fade-in-up" style="font-size: 1.2rem;">
+                展示我在大学四年中完成的数据分析项目<br>
+                从数据清洗到机器学习，从可视化到业务洞察
+            </p>
+
+            <!-- 精选项目 -->
+            {% if featured_projects %}
+            <div class="mb-5 fade-in-up">
+                <h2 class="text-center mb-4" style="color: #e0e7ff; font-size: 2rem; font-weight: 600;">
+                    🌟 精选项目
+                </h2>
+                <div class="row">
+                    {% for project in featured_projects %}
+                    <div class="col-md-6 col-lg-4 mb-4 fade-in-up">
+                        <div class="project-card">
+                            <div class="project-status
+                                {% if project.status == 'completed' %}status-completed
+                                {% elif project.status == 'in_progress' %}status-progress
+                                {% else %}status-planned{% endif %}">
+                                {% if project.status == 'completed' %}✅ 已完成
+                                {% elif project.status == 'in_progress' %}🚧 进行中
+                                {% else %}📋 计划中{% endif %}
+                            </div>
+
+                            <div class="project-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+
+                            <h5 class="mb-3 text-white">{{ project.name }}</h5>
+                            <p class="text-light opacity-75 mb-3">{{ project.description }}</p>
+
+                            <div class="mb-4">
+                                {% for tech in project.get_tech_list() %}
+                                <span class="tech-badge" style="background-color: rgba(102, 126, 234, 0.2); color: #667eea; border-color: rgba(102, 126, 234, 0.3);">
+                                    {{ tech }}
+                                </span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="d-flex gap-2 mt-auto">
+                                {% if project.github_url %}
+                                <a href="{{ project.github_url }}" class="btn btn-cool btn-sm flex-grow-1" target="_blank">
+                                    <i class="fab fa-github me-1"></i>GitHub
+                                </a>
+                                {% endif %}
+                                {% if project.demo_url %}
+                                <a href="{{ project.demo_url }}" class="btn btn-cool btn-sm flex-grow-1" target="_blank">
+                                    <i class="fas fa-external-link-alt me-1"></i>演示
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
-        </div>
-    </nav>
+            {% endif %}
 
-    <div class="container py-5">
-        <h1 class="mb-4">项目展示</h1>
+            <!-- 其他项目 -->
+            {% if other_projects %}
+            <div class="fade-in-up">
+                <h2 class="text-center mb-4" style="color: #e0e7ff; font-size: 2rem; font-weight: 600;">
+                    🔧 其他项目
+                </h2>
+                <div class="row">
+                    {% for project in other_projects %}
+                    <div class="col-md-6 col-lg-4 mb-4 fade-in-up">
+                        <div class="project-card">
+                            <div class="project-status
+                                {% if project.status == 'completed' %}status-completed
+                                {% elif project.status == 'in_progress' %}status-progress
+                                {% else %}status-planned{% endif %}">
+                                {% if project.status == 'completed' %}✅
+                                {% elif project.status == 'in_progress' %}🚧
+                                {% else %}📋{% endif %}
+                            </div>
 
-        <!-- 精选项目 -->
-        {% if featured_projects %}
-        <h2 class="mb-4">精选项目</h2>
-        <div class="row mb-5">
-            {% for project in featured_projects %}
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="project-card">
-                    <h5 class="mb-3">{{ project.name }}</h5>
-                    <p class="text-muted">{{ project.description }}</p>
-                    <div class="mb-3">
-                        {% for tech in project.get_tech_list() %}
-                        <span class="tech-badge">{{ tech }}</span>
-                        {% endfor %}
+                            <div class="project-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+
+                            <h6 class="mb-3 text-white">{{ project.name }}</h6>
+                            <p class="text-light opacity-75 mb-3 small">{{ project.description }}</p>
+
+                            <div class="mb-4">
+                                {% for tech in project.get_tech_list()[:3] %}
+                                <span class="tech-badge" style="background-color: rgba(139, 92, 246, 0.2); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.3);">
+                                    {{ tech }}
+                                </span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="d-flex gap-2 mt-auto">
+                                {% if project.github_url %}
+                                <a href="{{ project.github_url }}" class="btn btn-cool btn-sm" target="_blank">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                                {% endif %}
+                                {% if project.demo_url %}
+                                <a href="{{ project.demo_url }}" class="btn btn-cool btn-sm" target="_blank">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
-                    <div class="d-flex gap-2">
-                        {% if project.github_url %}
-                        <a href="{{ project.github_url }}" class="btn btn-outline-dark btn-sm" target="_blank">
-                            <i class="fab fa-github me-1"></i>GitHub
-                        </a>
-                        {% endif %}
-                        {% if project.demo_url %}
-                        <a href="{{ project.demo_url }}" class="btn btn-primary btn-sm" target="_blank">
-                            <i class="fas fa-external-link-alt me-1"></i>演示
-                        </a>
-                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 技能统计 -->
+            <div class="row mt-5 fade-in-up">
+                <div class="col-md-3 mb-3">
+                    <div class="cool-card text-center p-4">
+                        <i class="fas fa-project-diagram text-primary mb-3" style="font-size: 2rem;"></i>
+                        <h4 class="text-white">10+</h4>
+                        <p class="text-light opacity-75 mb-0">完成项目</p>
                     </div>
-                    <div class="mt-2">
-                        <small class="text-muted">
-                            状态:
-                            {% if project.status == 'completed' %}
-                            <span class="badge bg-success">已完成</span>
-                            {% elif project.status == 'in_progress' %}
-                            <span class="badge bg-warning">进行中</span>
-                            {% else %}
-                            <span class="badge bg-secondary">计划中</span>
-                            {% endif %}
-                        </small>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="cool-card text-center p-4">
+                        <i class="fas fa-database text-success mb-3" style="font-size: 2rem;"></i>
+                        <h4 class="text-white">50GB+</h4>
+                        <p class="text-light opacity-75 mb-0">处理数据</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="cool-card text-center p-4">
+                        <i class="fas fa-chart-bar text-warning mb-3" style="font-size: 2rem;"></i>
+                        <h4 class="text-white">100+</h4>
+                        <p class="text-light opacity-75 mb-0">可视化图表</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="cool-card text-center p-4">
+                        <i class="fas fa-brain text-danger mb-3" style="font-size: 2rem;"></i>
+                        <h4 class="text-white">20+</h4>
+                        <p class="text-light opacity-75 mb-0">机器学习模型</p>
                     </div>
                 </div>
             </div>
-            {% endfor %}
         </div>
-        {% endif %}
-
-        <!-- 其他项目 -->
-        {% if other_projects %}
-        <h2 class="mb-4">其他项目</h2>
-        <div class="row">
-            {% for project in other_projects %}
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="project-card">
-                    <h6 class="mb-3">{{ project.name }}</h6>
-                    <p class="text-muted small">{{ project.description }}</p>
-                    <div class="mb-3">
-                        {% for tech in project.get_tech_list()[:3] %}
-                        <span class="tech-badge">{{ tech }}</span>
-                        {% endfor %}
-                    </div>
-                    <div class="d-flex gap-2">
-                        {% if project.github_url %}
-                        <a href="{{ project.github_url }}" class="btn btn-outline-dark btn-sm" target="_blank">
-                            <i class="fab fa-github"></i>
-                        </a>
-                        {% endif %}
-                        {% if project.demo_url %}
-                        <a href="{{ project.demo_url }}" class="btn btn-primary btn-sm" target="_blank">
-                            <i class="fas fa-external-link-alt"></i>
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
     </div>
+
+    ''' + BASE_JAVASCRIPT + '''
 </body>
 </html>
 '''
@@ -3190,103 +3327,190 @@ LINKS_TEMPLATE = '''
     <title>友情链接 - {{ config.BLOG_TITLE }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    ''' + BASE_STYLES + '''
     <style>
-        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
-        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        /* 链接卡片特殊样式 */
         .link-card {
-            background: white; border-radius: 15px; padding: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s ease;
-            text-decoration: none; color: inherit; display: block; height: 100%;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
         }
+
+        .link-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+        }
+
         .link-card:hover {
-            transform: translateY(-5px); text-decoration: none; color: inherit;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            transform: translateY(-10px);
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            border-color: rgba(102, 126, 234, 0.5);
         }
+
         .link-avatar {
-            width: 60px; height: 60px; border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 1.5rem; margin-bottom: 1rem;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            margin: 0 auto 1.5rem;
+            box-shadow: var(--shadow-glow);
+            border: 3px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .link-category {
+            text-align: center;
+            margin: 4rem 0 2rem;
+        }
+
+        .category-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: inline-block;
+            padding: 1rem 2rem;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50px;
+            background-color: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    ''' + NAVBAR_HTML + '''
+
+    <!-- 主要内容区域 -->
+    <div class="main-content">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-blog me-2"></i>{{ config.BLOG_TITLE }}
-            </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="{{ url_for('index') }}">首页</a>
-                <a class="nav-link" href="{{ url_for('blog') }}">博客</a>
-                <a class="nav-link" href="{{ url_for('projects') }}">项目</a>
-                <a class="nav-link" href="{{ url_for('links') }}">友链</a>
-                <a class="nav-link" href="{{ url_for('about') }}">关于</a>
+            <h1 class="page-title fade-in-up">🔗 数据分析师资源导航</h1>
+            <p class="text-center text-light opacity-75 mb-5 fade-in-up" style="font-size: 1.2rem;">
+                精选数据分析学习资源、工具网站和同行博客<br>
+                助力数据分析师职业发展的优质资源合集
+            </p>
+
+            <!-- 朋友链接 -->
+            {% if friend_links %}
+            <div class="link-category fade-in-up">
+                <div class="category-title">👥 同行博客</div>
             </div>
-        </div>
-    </nav>
+            <div class="row mb-5">
+                {% for link in friend_links %}
+                <div class="col-md-6 col-lg-4 mb-4 fade-in-up">
+                    <a href="{{ link.url }}" class="link-card" target="_blank">
+                        <div class="link-avatar">
+                            {% if link.avatar %}
+                            <img src="{{ link.avatar }}" alt="{{ link.name }}" class="w-100 h-100 rounded-circle">
+                            {% else %}
+                            <i class="fas fa-user-graduate"></i>
+                            {% endif %}
+                        </div>
+                        <h6 class="text-center mb-2 text-white">{{ link.name }}</h6>
+                        <p class="text-center text-light opacity-75 small mb-0">{{ link.description or '数据分析师同行博客' }}</p>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
 
-    <div class="container py-5">
-        <h1 class="mb-5">友情链接</h1>
+            <!-- 学习资源 -->
+            {% if recommend_links %}
+            <div class="link-category fade-in-up">
+                <div class="category-title">📚 学习资源</div>
+            </div>
+            <div class="row mb-5">
+                {% for link in recommend_links %}
+                <div class="col-md-6 col-lg-4 mb-4 fade-in-up">
+                    <a href="{{ link.url }}" class="link-card" target="_blank">
+                        <div class="link-avatar">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h6 class="text-center mb-2 text-white">{{ link.name }}</h6>
+                        <p class="text-center text-light opacity-75 small mb-0">{{ link.description or '优质学习资源' }}</p>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
 
-        <!-- 朋友链接 -->
-        {% if friend_links %}
-        <h2 class="mb-4">朋友们</h2>
-        <div class="row mb-5">
-            {% for link in friend_links %}
-            <div class="col-md-6 col-lg-4 mb-4">
-                <a href="{{ link.url }}" class="link-card" target="_blank">
-                    <div class="link-avatar">
-                        {% if link.avatar %}
-                        <img src="{{ link.avatar }}" alt="{{ link.name }}" class="w-100 h-100 rounded-circle">
-                        {% else %}
-                        <i class="fas fa-user"></i>
-                        {% endif %}
+            <!-- 数据分析工具 -->
+            {% if tool_links %}
+            <div class="link-category fade-in-up">
+                <div class="category-title">🛠️ 数据分析工具</div>
+            </div>
+            <div class="row mb-5">
+                {% for link in tool_links %}
+                <div class="col-md-6 col-lg-4 mb-4 fade-in-up">
+                    <a href="{{ link.url }}" class="link-card" target="_blank">
+                        <div class="link-avatar">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h6 class="text-center mb-2 text-white">{{ link.name }}</h6>
+                        <p class="text-center text-light opacity-75 small mb-0">{{ link.description or '实用数据分析工具' }}</p>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- 申请友链 -->
+            <div class="text-center mt-5 fade-in-up">
+                <div class="cool-card p-4 d-inline-block">
+                    <h5 class="text-white mb-3">💌 申请友链</h5>
+                    <p class="text-light opacity-75 mb-3">
+                        如果你也是数据分析师或相关领域的同学，欢迎申请友链交换！
+                    </p>
+                    <div class="row text-start">
+                        <div class="col-md-6">
+                            <p class="text-light opacity-75 mb-1"><strong>网站要求：</strong></p>
+                            <ul class="text-light opacity-75 small">
+                                <li>数据分析/科学相关内容</li>
+                                <li>原创内容为主</li>
+                                <li>网站稳定访问</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="text-light opacity-75 mb-1"><strong>本站信息：</strong></p>
+                            <ul class="text-light opacity-75 small">
+                                <li>名称：wswldcs的数据分析之路</li>
+                                <li>描述：2025届数据分析师求职博客</li>
+                                <li>链接：https://wswldcs.edu.deal</li>
+                            </ul>
+                        </div>
                     </div>
-                    <h5 class="mb-2">{{ link.name }}</h5>
-                    <p class="text-muted small">{{ link.description or '暂无描述' }}</p>
-                </a>
+                    <a href="mailto:your-email@example.com" class="btn btn-cool mt-3">
+                        <i class="fas fa-envelope me-2"></i>联系申请友链
+                    </a>
+                </div>
             </div>
-            {% endfor %}
         </div>
-        {% endif %}
-
-        <!-- 推荐网站 -->
-        {% if recommend_links %}
-        <h2 class="mb-4">推荐网站</h2>
-        <div class="row mb-5">
-            {% for link in recommend_links %}
-            <div class="col-md-6 col-lg-4 mb-4">
-                <a href="{{ link.url }}" class="link-card" target="_blank">
-                    <div class="link-avatar">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <h5 class="mb-2">{{ link.name }}</h5>
-                    <p class="text-muted small">{{ link.description or '暂无描述' }}</p>
-                </a>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <!-- 工具网站 -->
-        {% if tool_links %}
-        <h2 class="mb-4">实用工具</h2>
-        <div class="row">
-            {% for link in tool_links %}
-            <div class="col-md-6 col-lg-4 mb-4">
-                <a href="{{ link.url }}" class="link-card" target="_blank">
-                    <div class="link-avatar">
-                        <i class="fas fa-tools"></i>
-                    </div>
-                    <h5 class="mb-2">{{ link.name }}</h5>
-                    <p class="text-muted small">{{ link.description or '暂无描述' }}</p>
-                </a>
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
     </div>
+
+    ''' + BASE_JAVASCRIPT + '''
 </body>
 </html>
 '''
@@ -3301,126 +3525,320 @@ ABOUT_TEMPLATE = '''
     <title>关于我 - {{ config.BLOG_TITLE }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    ''' + BASE_STYLES + '''
     <style>
-        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
-        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        /* 关于页面特殊样式 */
         .about-card {
-            background: white; border-radius: 15px; padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 2rem;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
         }
+
+        .about-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+        }
+
         .skill-bar {
-            background: #f8f9fa; border-radius: 10px; height: 10px;
-            overflow: hidden; margin-bottom: 1rem;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 15px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(102, 126, 234, 0.2);
         }
+
         .skill-progress {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            height: 100%; border-radius: 10px; transition: width 1s ease;
+            background: var(--gradient-primary);
+            height: 100%;
+            border-radius: 15px;
+            transition: width 2s ease;
+            position: relative;
+            overflow: hidden;
         }
+
+        .skill-progress::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
         .avatar {
-            width: 150px; height: 150px; border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 3rem; margin: 0 auto 2rem;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 4rem;
+            margin: 0 auto 2rem;
+            box-shadow: var(--shadow-glow);
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: rotate 3s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            color: white;
+            text-decoration: none;
+            margin: 0 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .social-link:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-glow);
+            color: white;
+            text-decoration: none;
+        }
+
+        .resume-btn {
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 25px;
+            padding: 1rem 2rem;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .resume-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-glow);
+            color: white;
+            text-decoration: none;
+        }
+
+        .resume-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.5s ease;
+        }
+
+        .resume-btn:hover::before {
+            left: 100%;
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    ''' + NAVBAR_HTML + '''
+
+    <!-- 主要内容区域 -->
+    <div class="main-content">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
-                <i class="fas fa-blog me-2"></i>{{ config.BLOG_TITLE }}
-            </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="{{ url_for('index') }}">首页</a>
-                <a class="nav-link" href="{{ url_for('blog') }}">博客</a>
-                <a class="nav-link" href="{{ url_for('projects') }}">项目</a>
-                <a class="nav-link" href="{{ url_for('about') }}">关于</a>
-            </div>
-        </div>
-    </nav>
+            <h1 class="page-title fade-in-up">👨‍💻 关于我</h1>
+            <p class="text-center text-light opacity-75 mb-5 fade-in-up" style="font-size: 1.2rem;">
+                2025届数据科学专业毕业生，正在寻找数据分析师工作机会<br>
+                用数据驱动决策，用技术创造价值
+            </p>
 
-    <div class="container py-5">
-        <div class="row">
-            <div class="col-lg-4">
-                <div class="about-card text-center">
-                    <div class="avatar">
-                        {% if author and author.avatar and author.avatar != 'default.jpg' %}
-                        <img src="{{ author.avatar }}" alt="{{ author.username }}" class="w-100 h-100 rounded-circle">
-                        {% else %}
-                        <i class="fas fa-user"></i>
-                        {% endif %}
-                    </div>
-                    <h3>{{ config.AUTHOR_NAME }}</h3>
-                    <p class="text-muted">{{ author.bio if author else '热爱技术的开发者' }}</p>
-
-                    <div class="d-flex justify-content-center gap-3 mt-3">
-                        {% if author and author.github %}
-                        <a href="https://github.com/{{ author.github }}" class="btn btn-outline-dark" target="_blank">
-                            <i class="fab fa-github"></i>
-                        </a>
-                        {% endif %}
-                        {% if author and author.twitter %}
-                        <a href="https://twitter.com/{{ author.twitter }}" class="btn btn-outline-info" target="_blank">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        {% endif %}
-                        {% if author and author.linkedin %}
-                        <a href="https://linkedin.com/in/{{ author.linkedin }}" class="btn btn-outline-primary" target="_blank">
-                            <i class="fab fa-linkedin"></i>
-                        </a>
-                        {% endif %}
-                        {% if author and author.website %}
-                        <a href="{{ author.website }}" class="btn btn-outline-success" target="_blank">
-                            <i class="fas fa-globe"></i>
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-8">
-                <div class="about-card">
-                    <h2 class="mb-4">关于我</h2>
-                    <p>你好！我是{{ config.AUTHOR_NAME }}，一名热爱技术的开发者。</p>
-                    <p>我专注于Web开发，喜欢学习新技术，乐于分享技术心得和生活感悟。这个博客是我记录学习历程、分享技术经验的地方。</p>
-                    <p>希望我的分享能对你有所帮助，也欢迎与我交流讨论！</p>
-                </div>
-
-                <div class="about-card">
-                    <h3 class="mb-4">技能水平</h3>
-                    {% for skill, level in tech_stats.items() %}
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>{{ skill }}</span>
-                            <span>{{ level }}%</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-progress" style="width: {{ level }}%;"></div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-
-                <div class="about-card">
-                    <h3 class="mb-4">联系方式</h3>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><i class="fas fa-envelope me-2"></i>{{ config.AUTHOR_EMAIL }}</p>
-                            <p><i class="fas fa-map-marker-alt me-2"></i>{{ config.AUTHOR_LOCATION }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            {% if author and author.github %}
-                            <p><i class="fab fa-github me-2"></i>{{ author.github }}</p>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="about-card text-center fade-in-up">
+                        <div class="avatar">
+                            {% if author and author.avatar and author.avatar != 'default.jpg' %}
+                            <img src="{{ author.avatar }}" alt="{{ author.username }}" class="w-100 h-100 rounded-circle">
+                            {% else %}
+                            <i class="fas fa-user-graduate"></i>
                             {% endif %}
-                            {% if author and author.website %}
-                            <p><i class="fas fa-globe me-2"></i>{{ author.website }}</p>
-                            {% endif %}
+                        </div>
+                        <h3 class="text-white mb-2">{{ config.AUTHOR_NAME }}</h3>
+                        <p class="text-light opacity-75 mb-3">数据分析师 · 2025届毕业生</p>
+                        <p class="text-light opacity-75 mb-4">{{ author.bio if author else '用数据讲故事，用分析驱动决策' }}</p>
+
+                        <div class="d-flex justify-content-center gap-2 mb-4">
+                            <a href="https://github.com/wswldcs" class="social-link" target="_blank">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="mailto:your-email@example.com" class="social-link" target="_blank">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            <a href="https://linkedin.com/in/yourprofile" class="social-link" target="_blank">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
+                            <a href="https://wswldcs.edu.deal" class="social-link" target="_blank">
+                                <i class="fas fa-globe"></i>
+                            </a>
+                        </div>
+
+                        <a href="#" class="resume-btn">
+                            <i class="fas fa-download me-2"></i>下载简历
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="about-card fade-in-up">
+                        <h2 class="mb-4 text-white">🎓 我的故事</h2>
+                        <div class="text-light opacity-75">
+                            <p class="mb-3">
+                                你好！我是{{ config.AUTHOR_NAME }}，一名即将于2025年6月毕业的数据科学专业学生。
+                                从2021年9月踏入大学校园开始，我就对数据的魅力深深着迷。
+                            </p>
+                            <p class="mb-3">
+                                在过去的四年里，我系统学习了统计学、机器学习、数据挖掘等核心课程，
+                                熟练掌握了Python、SQL、Tableau等数据分析工具，
+                                完成了多个实际的数据分析项目。
+                            </p>
+                            <p class="mb-3">
+                                我相信数据是现代商业的石油，而数据分析师就是炼油师。
+                                我希望能够加入一家重视数据驱动决策的公司，
+                                用我的技能帮助企业从数据中发现价值，优化业务流程。
+                            </p>
+                            <p class="mb-0">
+                                这个博客记录了我的学习历程、项目经验和求职准备，
+                                希望能够展示我的专业能力，也希望能够帮助到同样在数据分析道路上前行的朋友们。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="about-card fade-in-up">
+                        <h3 class="mb-4 text-white">💪 技能水平</h3>
+                        {% for skill, level in tech_stats.items() %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-white">{{ skill }}</span>
+                                <span class="text-light opacity-75">{{ level }}%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: {{ level }}%;"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="about-card fade-in-up">
+                        <h3 class="mb-4 text-white">📞 联系方式</h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="text-light opacity-75 mb-2">
+                                    <i class="fas fa-envelope me-2 text-primary"></i>{{ config.AUTHOR_EMAIL }}
+                                </p>
+                                <p class="text-light opacity-75 mb-2">
+                                    <i class="fas fa-map-marker-alt me-2 text-success"></i>{{ config.AUTHOR_LOCATION }}
+                                </p>
+                                <p class="text-light opacity-75 mb-2">
+                                    <i class="fas fa-graduation-cap me-2 text-warning"></i>2025年6月毕业
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-light opacity-75 mb-2">
+                                    <i class="fab fa-github me-2 text-info"></i>github.com/wswldcs
+                                </p>
+                                <p class="text-light opacity-75 mb-2">
+                                    <i class="fas fa-globe me-2 text-danger"></i>wswldcs.edu.deal
+                                </p>
+                                <p class="text-light opacity-75 mb-2">
+                                    <i class="fas fa-briefcase me-2 text-purple"></i>正在求职中
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <p class="text-light opacity-75 mb-3">
+                                <strong>如果您有合适的数据分析师职位，欢迎与我联系！</strong>
+                            </p>
+                            <div class="d-flex justify-content-center gap-3">
+                                <a href="mailto:your-email@example.com" class="btn btn-cool">
+                                    <i class="fas fa-envelope me-2"></i>发送邮件
+                                </a>
+                                <a href="#" class="btn btn-cool">
+                                    <i class="fab fa-linkedin me-2"></i>LinkedIn
+                                </a>
+                                <a href="#" class="btn btn-cool">
+                                    <i class="fas fa-phone me-2"></i>电话联系
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    ''' + BASE_JAVASCRIPT + '''
+    <script>
+        // 技能条动画
+        document.addEventListener('DOMContentLoaded', function() {
+            const skillBars = document.querySelectorAll('.skill-progress');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const width = entry.target.style.width;
+                        entry.target.style.width = '0%';
+                        setTimeout(() => {
+                            entry.target.style.width = width;
+                        }, 500);
+                    }
+                });
+            }, {
+                threshold: 0.5
+            });
+
+            skillBars.forEach(bar => {
+                observer.observe(bar);
+            });
+        });
+    </script>
 </body>
 </html>
 '''
