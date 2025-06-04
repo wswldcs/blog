@@ -272,37 +272,42 @@ def init_database(app):
                 admin.set_password('admin123')
                 db.session.add(admin)
                 
-                # 创建分类
+                # 创建分类（数据分析师主题）
                 categories = [
-                    {'name': '技术分享', 'description': '编程技术和开发经验分享', 'color': '#007bff', 'icon': 'fas fa-code'},
-                    {'name': '生活随笔', 'description': '日常生活感悟和个人思考', 'color': '#28a745', 'icon': 'fas fa-heart'},
-                    {'name': '学习笔记', 'description': '学习过程中的记录和总结', 'color': '#ffc107', 'icon': 'fas fa-book'},
-                    {'name': '项目实战', 'description': '实际项目开发经验和案例', 'color': '#dc3545', 'icon': 'fas fa-rocket'},
-                    {'name': '工具推荐', 'description': '好用的工具和资源推荐', 'color': '#6f42c1', 'icon': 'fas fa-tools'},
-                    {'name': '旅行游记', 'description': '旅行见闻和摄影作品', 'color': '#fd7e14', 'icon': 'fas fa-camera'}
+                    {'name': '数据分析', 'description': 'Python、SQL、统计分析技术分享', 'color': '#3b82f6', 'icon': 'fas fa-chart-line'},
+                    {'name': '机器学习', 'description': '机器学习算法和模型实践', 'color': '#8b5cf6', 'icon': 'fas fa-brain'},
+                    {'name': '数据可视化', 'description': 'Tableau、Python可视化技术', 'color': '#10b981', 'icon': 'fas fa-chart-bar'},
+                    {'name': '学习笔记', 'description': '大学四年学习过程记录', 'color': '#f59e0b', 'icon': 'fas fa-graduation-cap'},
+                    {'name': '项目实战', 'description': '数据分析项目案例和经验', 'color': '#ef4444', 'icon': 'fas fa-project-diagram'},
+                    {'name': '求职经历', 'description': '求职准备和面试经验分享', 'color': '#06b6d4', 'icon': 'fas fa-briefcase'}
                 ]
                 
                 for cat_data in categories:
                     category = Category(**cat_data)
                     db.session.add(category)
                 
-                # 创建标签
+                # 创建标签（数据分析师技能）
                 tags_data = [
                     {'name': 'Python', 'color': '#3776ab'},
-                    {'name': 'Flask', 'color': '#000000'},
-                    {'name': 'JavaScript', 'color': '#f7df1e'},
-                    {'name': 'Vue.js', 'color': '#4fc08d'},
-                    {'name': 'React', 'color': '#61dafb'},
-                    {'name': 'MySQL', 'color': '#4479a1'},
-                    {'name': 'Docker', 'color': '#2496ed'},
-                    {'name': 'Linux', 'color': '#fcc624'},
-                    {'name': '前端开发', 'color': '#61dafb'},
-                    {'name': '后端开发', 'color': '#68217a'},
-                    {'name': '全栈开发', 'color': '#ff6b6b'},
-                    {'name': '数据库', 'color': '#336791'},
-                    {'name': '算法', 'color': '#ff9500'},
-                    {'name': '机器学习', 'color': '#ff6b35'},
-                    {'name': '人工智能', 'color': '#4ecdc4'}
+                    {'name': 'SQL', 'color': '#336791'},
+                    {'name': 'Pandas', 'color': '#150458'},
+                    {'name': 'NumPy', 'color': '#013243'},
+                    {'name': 'Matplotlib', 'color': '#11557c'},
+                    {'name': 'Seaborn', 'color': '#4c72b0'},
+                    {'name': 'Scikit-learn', 'color': '#f7931e'},
+                    {'name': 'Tableau', 'color': '#e97627'},
+                    {'name': 'Excel', 'color': '#217346'},
+                    {'name': 'R语言', 'color': '#276dc3'},
+                    {'name': '统计学', 'color': '#4ecdc4'},
+                    {'name': '数据挖掘', 'color': '#ff6b35'},
+                    {'name': '机器学习', 'color': '#8b5cf6'},
+                    {'name': '深度学习', 'color': '#6366f1'},
+                    {'name': '数据清洗', 'color': '#10b981'},
+                    {'name': '数据可视化', 'color': '#f59e0b'},
+                    {'name': 'A/B测试', 'color': '#ef4444'},
+                    {'name': '业务分析', 'color': '#06b6d4'},
+                    {'name': '大学生活', 'color': '#84cc16'},
+                    {'name': '求职准备', 'color': '#f97316'}
                 ]
                 
                 for tag_data in tags_data:
@@ -312,66 +317,147 @@ def init_database(app):
                 db.session.commit()
                 
                 # 获取创建的分类和标签
-                tech_category = Category.query.filter_by(name='技术分享').first()
-                life_category = Category.query.filter_by(name='生活随笔').first()
+                data_analysis_category = Category.query.filter_by(name='数据分析').first()
                 study_category = Category.query.filter_by(name='学习笔记').first()
-                
+                job_category = Category.query.filter_by(name='求职经历').first()
+
                 python_tag = Tag.query.filter_by(name='Python').first()
-                flask_tag = Tag.query.filter_by(name='Flask').first()
-                js_tag = Tag.query.filter_by(name='JavaScript').first()
-                
-                # 创建示例文章
+                sql_tag = Tag.query.filter_by(name='SQL').first()
+                pandas_tag = Tag.query.filter_by(name='Pandas').first()
+                job_tag = Tag.query.filter_by(name='求职准备').first()
+
+                # 创建示例文章（数据分析师求职主题）
                 posts_data = [
                     {
-                        'title': '欢迎来到我的个人博客',
-                        'slug': 'welcome-to-my-blog',
-                        'summary': '这是我的第一篇博客文章，介绍了博客的功能特性和技术栈。',
-                        'content': '''# 欢迎来到我的个人博客！
+                        'title': '我的数据分析师求职之路',
+                        'slug': 'my-data-analyst-journey',
+                        'summary': '从2021年9月入学到2025年6月毕业，四年大学生涯即将结束，现在正在积极寻找数据分析师的工作机会。',
+                        'content': '''# 我的数据分析师求职之路
 
-感谢你访问我的个人博客！这里是我分享技术心得、记录生活点滴的地方。
+大家好！我是一名即将于2025年6月毕业的数据科学专业学生，目前正在积极寻找数据分析师的工作机会。
 
-## 🚀 博客特色功能
+## 🎓 我的大学四年
 
-### 📝 内容管理
-- **文章分类**：技术分享、生活随笔、学习笔记等
-- **标签系统**：便于内容检索和分类
-- **Markdown支持**：优雅的写作体验
-- **代码高亮**：程序员友好的代码展示
+### 2021年9月 - 初入校园
+刚进入大学时，我对数据科学还是一个模糊的概念。通过《统计学原理》和《Python基础》等课程，我开始接触到数据的魅力。
 
-### 🌟 个性化功能
-- **实时天气**：显示当前天气信息
-- **访客统计**：记录访客地理位置和距离
-- **日历组件**：按日期浏览文章
-- **社交链接**：连接各大平台
+### 2022年 - 技能建设年
+- 深入学习Python编程，掌握Pandas、NumPy等数据处理库
+- 学习SQL数据库操作，能够熟练进行数据查询和分析
+- 接触机器学习基础理论，了解监督学习和无监督学习
 
-### 🎨 界面设计
-- **响应式布局**：完美适配各种设备
-- **现代化UI**：基于Bootstrap 5设计
-- **动画效果**：流畅的用户体验
-- **主题切换**：支持明暗主题
+### 2023年 - 实践提升年
+- 完成多个数据分析项目，包括销售数据分析、用户行为分析等
+- 学习Tableau和Python可视化，能够制作专业的数据报告
+- 参与学校的数据建模竞赛，获得了宝贵的实战经验
 
-## 🛠️ 技术栈
+### 2024年 - 深化专业年
+- 深入学习机器学习算法，掌握回归、分类、聚类等方法
+- 学习A/B测试和统计推断，具备业务分析能力
+- 开始关注行业趋势，了解不同行业的数据分析应用
 
-- **后端**：Python + Flask
-- **数据库**：MySQL
-- **前端**：Bootstrap 5 + JavaScript
-- **部署**：Railway云平台
-- **版本控制**：Git + GitHub
+## 💼 求职准备
 
-## 📚 内容规划
+### 技能清单
+- **编程语言**：Python (熟练)、SQL (熟练)、R (了解)
+- **数据处理**：Pandas、NumPy、数据清洗、特征工程
+- **数据可视化**：Matplotlib、Seaborn、Tableau、Excel
+- **机器学习**：Scikit-learn、监督学习、无监督学习
+- **统计分析**：描述性统计、假设检验、A/B测试
+- **业务理解**：数据驱动决策、业务指标分析
 
-我会在这里分享：
-- 编程技术和开发经验
-- 学习心得和成长历程
-- 生活感悟和个人思考
-- 项目实战和案例分析
-- 工具推荐和资源分享
+### 项目经验
+1. **电商用户行为分析**：使用Python分析用户购买路径，提升转化率15%
+2. **销售预测模型**：基于历史数据建立时间序列预测模型，准确率达85%
+3. **客户细分分析**：使用聚类算法进行客户分群，优化营销策略
 
-希望我的分享能对你有所帮助！''',
-                        'category': tech_category,
-                        'tags': [python_tag, flask_tag],
+## 🎯 求职目标
+
+我希望能够加入一家重视数据驱动决策的公司，担任数据分析师职位，将我四年来学到的知识应用到实际业务中，用数据创造价值。
+
+## 📞 联系我
+
+如果您有合适的数据分析师职位，欢迎与我联系！我已经准备好迎接新的挑战，为公司的数据驱动发展贡献自己的力量。
+
+---
+
+*这个博客记录了我的学习历程和求职准备，希望能够帮助到同样在数据分析道路上前行的朋友们。*''',
+                        'category': job_category,
+                        'tags': [python_tag, sql_tag, job_tag],
                         'is_published': True,
                         'is_featured': True
+                    },
+                    {
+                        'title': 'Python数据分析入门指南',
+                        'slug': 'python-data-analysis-guide',
+                        'summary': '从零开始学习Python数据分析，包括Pandas、NumPy等核心库的使用方法和实践技巧。',
+                        'content': '''# Python数据分析入门指南
+
+作为一名数据科学专业的学生，我想分享一下Python数据分析的学习心得。
+
+## 🐍 为什么选择Python？
+
+Python在数据分析领域有着独特的优势：
+- 语法简洁易学
+- 丰富的数据分析库
+- 强大的社区支持
+- 与机器学习无缝集成
+
+## 📚 核心库介绍
+
+### Pandas - 数据处理神器
+```python
+import pandas as pd
+
+# 读取数据
+df = pd.read_csv('data.csv')
+
+# 数据探索
+df.head()
+df.info()
+df.describe()
+
+# 数据清洗
+df.dropna()  # 删除缺失值
+df.fillna(0)  # 填充缺失值
+```
+
+### NumPy - 数值计算基础
+```python
+import numpy as np
+
+# 创建数组
+arr = np.array([1, 2, 3, 4, 5])
+
+# 统计计算
+np.mean(arr)  # 平均值
+np.std(arr)   # 标准差
+```
+
+### Matplotlib - 数据可视化
+```python
+import matplotlib.pyplot as plt
+
+# 绘制折线图
+plt.plot(x, y)
+plt.title('数据趋势图')
+plt.xlabel('时间')
+plt.ylabel('数值')
+plt.show()
+```
+
+## 🎯 学习建议
+
+1. **从基础开始**：先掌握Python基础语法
+2. **多做练习**：通过实际项目巩固知识
+3. **关注业务**：理解数据背后的业务含义
+4. **持续学习**：跟上技术发展趋势
+
+希望这个指南能帮助到正在学习数据分析的朋友们！''',
+                        'category': data_analysis_category,
+                        'tags': [python_tag, pandas_tag],
+                        'is_published': True,
+                        'is_featured': False
                     }
                 ]
                 
@@ -839,17 +925,24 @@ INDEX_TEMPLATE = '''
             --primary-color: #667eea;
             --secondary-color: #764ba2;
             --accent-color: #f093fb;
+            --data-blue: #3b82f6;
+            --data-purple: #8b5cf6;
+            --data-green: #10b981;
+            --data-orange: #f59e0b;
+            --data-red: #ef4444;
             --success-color: #4ecdc4;
             --warning-color: #ffe66d;
             --danger-color: #ff6b6b;
-            --dark-color: #2c3e50;
-            --light-color: #f8f9fa;
-            --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            --dark-color: #1e293b;
+            --light-color: #f8fafc;
+            --gradient-primary: linear-gradient(135deg, var(--data-blue) 0%, var(--data-purple) 100%);
             --gradient-accent: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
+            --gradient-data: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
             --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
             --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
             --shadow-xl: 0 20px 25px rgba(0,0,0,0.1);
+            --shadow-glow: 0 0 20px rgba(102, 126, 234, 0.3);
         }
 
         * {
@@ -861,44 +954,122 @@ INDEX_TEMPLATE = '''
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #1e293b;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* 导航栏样式 */
+        /* 粒子背景 */
+        .particles-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(102, 126, 234, 0.6);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        /* 超炫酷导航栏 */
         .navbar {
-            background: var(--gradient-primary) !important;
-            backdrop-filter: blur(10px);
-            box-shadow: var(--shadow-md);
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             padding: 1rem 0;
+            position: fixed !important;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: rgba(15, 23, 42, 0.98) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
 
         .navbar-brand {
             font-weight: 700;
             font-size: 1.5rem;
             color: white !important;
+            text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            color: var(--data-blue) !important;
+            text-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+            transform: scale(1.05);
         }
 
         .navbar-nav .nav-link {
             color: rgba(255,255,255,0.9) !important;
             font-weight: 500;
             margin: 0 0.5rem;
+            padding: 0.5rem 1rem !important;
+            border-radius: 25px;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .navbar-nav .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: all 0.3s ease;
+            z-index: -1;
         }
 
         .navbar-nav .nav-link:hover {
             color: white !important;
             transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
         }
 
-        /* Hero区域 */
-        .hero-section {
+        .navbar-nav .nav-link:hover::before {
+            left: 0;
+        }
+
+        .navbar-nav .nav-link.active {
             background: var(--gradient-primary);
+            color: white !important;
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* 页面内容顶部间距 */
+        .main-content {
+            margin-top: 80px;
+        }
+
+        /* 超炫酷Hero区域 */
+        .hero-section {
+            background: var(--gradient-data);
             color: white;
-            padding: 100px 0;
+            padding: 150px 0 100px;
             position: relative;
             overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
         }
 
         .hero-section::before {
@@ -908,8 +1079,10 @@ INDEX_TEMPLATE = '''
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><polygon points="1000,100 1000,0 0,100"/></svg>');
-            background-size: cover;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(240, 147, 251, 0.2) 0%, transparent 50%);
         }
 
         .hero-content {
@@ -918,16 +1091,36 @@ INDEX_TEMPLATE = '''
         }
 
         .hero-title {
-            font-size: 3.5rem;
-            font-weight: 700;
+            font-size: 4rem;
+            font-weight: 800;
             margin-bottom: 1.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 0 30px rgba(0,0,0,0.5);
+            background: linear-gradient(45deg, #ffffff, #e0e7ff, #c7d2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            0% { text-shadow: 0 0 30px rgba(102, 126, 234, 0.5); }
+            100% { text-shadow: 0 0 50px rgba(139, 92, 246, 0.8); }
         }
 
         .hero-subtitle {
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             margin-bottom: 2rem;
+            opacity: 0.95;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
             opacity: 0.9;
+            max-width: 600px;
+            line-height: 1.8;
         }
 
         .hero-stats {
@@ -1333,47 +1526,70 @@ INDEX_TEMPLATE = '''
         </div>
     </nav>
 
-    <!-- Hero区域 -->
+    <!-- 粒子背景 -->
+    <div class="particles-bg" id="particles-bg"></div>
+
+    <!-- 超炫酷Hero区域 -->
     <section class="hero-section">
         <div class="container">
-            <div class="hero-content text-center">
-                <h1 class="hero-title fade-in-up">{{ config.AUTHOR_NAME }}的个人空间</h1>
-                <p class="hero-subtitle fade-in-up">{{ config.BLOG_SUBTITLE }}</p>
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <h1 class="hero-title fade-in-up">数据分析师</h1>
+                        <p class="hero-subtitle fade-in-up">{{ config.AUTHOR_NAME }} · 2025届毕业生</p>
+                        <p class="hero-description fade-in-up">
+                            从2021年9月踏入大学校园，到2025年6月即将毕业，四年的数据科学学习之旅即将告一段落。
+                            现在，我正在寻找数据分析师的工作机会，希望将所学知识应用到实际业务中，
+                            用数据驱动决策，创造价值。
+                        </p>
 
-                <div class="hero-stats fade-in-up">
-                    <div class="hero-stat">
-                        <span class="hero-stat-number">{{ stats.total_posts }}</span>
-                        <span class="hero-stat-label">篇文章</span>
-                    </div>
-                    <div class="hero-stat">
-                        <span class="hero-stat-number">{{ stats.total_visitors }}</span>
-                        <span class="hero-stat-label">位访客</span>
-                    </div>
-                    <div class="hero-stat">
-                        <span class="hero-stat-number">{{ stats.total_views }}</span>
-                        <span class="hero-stat-label">次浏览</span>
-                    </div>
-                    <div class="hero-stat">
-                        <span class="hero-stat-number">{{ stats.total_comments }}</span>
-                        <span class="hero-stat-label">条评论</span>
+                        <div class="hero-stats fade-in-up">
+                            <div class="hero-stat">
+                                <span class="hero-stat-number">4</span>
+                                <span class="hero-stat-label">年学习历程</span>
+                            </div>
+                            <div class="hero-stat">
+                                <span class="hero-stat-number">{{ stats.total_posts }}</span>
+                                <span class="hero-stat-label">篇学习笔记</span>
+                            </div>
+                            <div class="hero-stat">
+                                <span class="hero-stat-number">15+</span>
+                                <span class="hero-stat-label">项技能掌握</span>
+                            </div>
+                            <div class="hero-stat">
+                                <span class="hero-stat-number">10+</span>
+                                <span class="hero-stat-label">个项目经验</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <a href="{{ url_for('timeline') }}" class="btn btn-primary btn-lg me-3">
+                                <i class="fas fa-chart-line me-2"></i>学习历程
+                            </a>
+                            <a href="{{ url_for('projects') }}" class="btn btn-outline-light btn-lg me-3">
+                                <i class="fas fa-code me-2"></i>项目作品
+                            </a>
+                            <a href="{{ url_for('about') }}" class="btn btn-outline-light btn-lg">
+                                <i class="fas fa-download me-2"></i>简历下载
+                            </a>
+                        </div>
                     </div>
                 </div>
-
-                <div class="mt-4">
-                    <a href="{{ url_for('blog') }}" class="btn btn-primary btn-lg me-3">
-                        <i class="fas fa-blog me-2"></i>阅读博客
-                    </a>
-                    <a href="{{ url_for('about') }}" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-user me-2"></i>了解我
-                    </a>
+                <div class="col-lg-6">
+                    <div class="hero-visual text-center">
+                        <div class="data-visualization">
+                            <canvas id="skillChart" width="400" height="400"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- 主要内容区域 -->
-    <div class="container py-5">
-        <div class="row">
+    <div class="main-content">
+        <div class="container py-5">
+            <div class="row">
             <!-- 主内容区 -->
             <div class="col-lg-8">
                 <!-- 精选文章 -->
@@ -1674,6 +1890,7 @@ INDEX_TEMPLATE = '''
                 {% endif %}
             </div>
         </div>
+        </div>
     </div>
 
     <!-- 页脚 -->
@@ -1844,10 +2061,147 @@ INDEX_TEMPLATE = '''
             return R * c;
         }
 
+        // 创建粒子背景
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles-bg');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+
+                // 随机大小和位置
+                const size = Math.random() * 4 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+
+                // 随机动画延迟
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 导航栏滚动效果
+        function handleNavbarScroll() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        }
+
+        // 创建技能雷达图
+        function createSkillChart() {
+            const canvas = document.getElementById('skillChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 150;
+
+            // 技能数据
+            const skills = [
+                { name: 'Python', value: 90, color: '#3776ab' },
+                { name: 'SQL', value: 85, color: '#336791' },
+                { name: 'Excel', value: 95, color: '#217346' },
+                { name: 'Tableau', value: 80, color: '#e97627' },
+                { name: 'R语言', value: 75, color: '#276dc3' },
+                { name: 'Machine Learning', value: 70, color: '#ff6b35' },
+                { name: 'Statistics', value: 85, color: '#4ecdc4' },
+                { name: 'Data Visualization', value: 88, color: '#45b7d1' }
+            ];
+
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制背景网格
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 1;
+            for (let i = 1; i <= 5; i++) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, (radius / 5) * i, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+
+            // 绘制轴线
+            const angleStep = (2 * Math.PI) / skills.length;
+            for (let i = 0; i < skills.length; i++) {
+                const angle = i * angleStep - Math.PI / 2;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+
+                // 绘制技能标签
+                ctx.fillStyle = 'white';
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'center';
+                const labelX = centerX + Math.cos(angle) * (radius + 20);
+                const labelY = centerY + Math.sin(angle) * (radius + 20);
+                ctx.fillText(skills[i].name, labelX, labelY);
+            }
+
+            // 绘制技能多边形
+            ctx.beginPath();
+            for (let i = 0; i < skills.length; i++) {
+                const angle = i * angleStep - Math.PI / 2;
+                const value = skills[i].value / 100;
+                const x = centerX + Math.cos(angle) * radius * value;
+                const y = centerY + Math.sin(angle) * radius * value;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(102, 126, 234, 0.3)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 绘制技能点
+            for (let i = 0; i < skills.length; i++) {
+                const angle = i * angleStep - Math.PI / 2;
+                const value = skills[i].value / 100;
+                const x = centerX + Math.cos(angle) * radius * value;
+                const y = centerY + Math.sin(angle) * radius * value;
+
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                ctx.fillStyle = skills[i].color;
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', function() {
+            // 创建粒子背景
+            createParticles();
+
+            // 创建技能图表
+            createSkillChart();
+
+            // 加载天气和访客信息
             loadWeather();
             loadVisitorInfo();
+
+            // 滚动事件监听
+            window.addEventListener('scroll', handleNavbarScroll);
 
             // 添加滚动动画
             const observerOptions = {
@@ -1870,6 +2224,14 @@ INDEX_TEMPLATE = '''
                 el.style.transform = 'translateY(30px)';
                 el.style.transition = 'all 0.6s ease-out';
                 observer.observe(el);
+            });
+
+            // 为导航链接添加活动状态
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
             });
         });
     </script>
