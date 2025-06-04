@@ -10,6 +10,7 @@ import json
 import requests
 import time
 from datetime import datetime, timedelta
+from werkzeug.utils import secure_filename
 from flask import Flask, render_template_string, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -64,7 +65,11 @@ def create_app():
     # API配置
     app.config['WEATHER_API_KEY'] = os.environ.get('WEATHER_API_KEY', '')
     app.config['IPAPI_KEY'] = os.environ.get('IPAPI_KEY', '')
-    
+
+    # 文件上传配置
+    app.config['UPLOAD_FOLDER'] = 'static/uploads'
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+
     # 初始化扩展
     db.init_app(app)
     login_manager.init_app(app)
@@ -243,7 +248,7 @@ def get_weather_info(city='Beijing'):
         api_key = app.config.get('WEATHER_API_KEY')
         if not api_key:
             return None
-        
+
         url = f'http://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric&lang=zh_cn'
         response = requests.get(url, timeout=5)
         if response.status_code == 200:
@@ -251,6 +256,12 @@ def get_weather_info(city='Beijing'):
     except:
         pass
     return None
+
+def allowed_file(filename):
+    """检查文件扩展名是否允许"""
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def init_database(app):
     """初始化数据库"""
@@ -3120,12 +3131,35 @@ TIMELINE_TEMPLATE = '''
             border-color: rgba(102, 126, 234, 0.5);
         }
 
-        .timeline-item:nth-child(odd) .timeline-content {
+        .timeline-left .timeline-content {
             margin-left: 55%;
         }
 
-        .timeline-item:nth-child(even) .timeline-content {
+        .timeline-right .timeline-content {
             margin-right: 55%;
+        }
+
+        /* 添加箭头指向中心线 */
+        .timeline-left .timeline-content::after {
+            content: '';
+            position: absolute;
+            top: 2rem;
+            right: -15px;
+            width: 0;
+            height: 0;
+            border: 15px solid transparent;
+            border-left-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .timeline-right .timeline-content::after {
+            content: '';
+            position: absolute;
+            top: 2rem;
+            left: -15px;
+            width: 0;
+            height: 0;
+            border: 15px solid transparent;
+            border-right-color: rgba(102, 126, 234, 0.3);
         }
 
         .timeline-icon {
@@ -3226,7 +3260,7 @@ TIMELINE_TEMPLATE = '''
                     <div class="year-title">{{ year }}年</div>
                 </div>
                 {% for item in items %}
-                <div class="timeline-item">
+                <div class="timeline-item {{ 'timeline-left' if loop.index % 2 == 1 else 'timeline-right' }}">
                     <div class="timeline-icon" style="background: {{ item.color }};">
                         <i class="{{ item.icon }}"></i>
                     </div>
@@ -5342,10 +5376,19 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                                                   placeholder="简单描述这个网站..."></textarea>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label text-light">头像链接</label>
-                                        <input type="url" class="form-control" name="avatar"
-                                               style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
-                                               placeholder="https://example.com/avatar.jpg">
+                                        <label class="form-label text-light">头像</label>
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <input type="url" class="form-control" name="avatar" id="avatarUrl"
+                                                       style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
+                                                       placeholder="头像链接或上传图片">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <input type="file" class="form-control" id="avatarFile" accept="image/*"
+                                                       style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;">
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">可以输入头像链接或上传图片文件</small>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6">
@@ -5416,11 +5459,42 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 return;
             }
 
+            let avatarUrl = formData.get('avatar').trim();
+
+            // 检查是否有上传的文件
+            const avatarFile = document.getElementById('avatarFile').files[0];
+            if (avatarFile) {
+                try {
+                    // 上传文件
+                    const uploadFormData = new FormData();
+                    uploadFormData.append('file', avatarFile);
+
+                    const uploadResponse = await fetch('/api/admin/upload', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        body: uploadFormData
+                    });
+
+                    const uploadResult = await uploadResponse.json();
+
+                    if (uploadResponse.ok) {
+                        avatarUrl = uploadResult.file_url;
+                    } else {
+                        alert('头像上传失败: ' + uploadResult.error);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('头像上传失败:', error);
+                    alert('头像上传失败: ' + error.message);
+                    return;
+                }
+            }
+
             const linkData = {
                 name: name,
                 url: url,
                 description: formData.get('description').trim(),
-                avatar: formData.get('avatar').trim(),
+                avatar: avatarUrl,
                 category: formData.get('category'),
                 sort_order: parseInt(formData.get('sort_order')) || 0,
                 is_active: formData.has('is_active')
@@ -5726,7 +5800,7 @@ def api_admin_timeline():
     if not session.get('admin_logged_in'):
         return jsonify({'error': '未授权'}), 401
 
-    timeline_items = Timeline.query.order_by(Timeline.date.desc()).all()
+    timeline_items = Timeline.query.order_by(Timeline.date.asc()).all()  # 改为正序
     timeline_data = []
     for item in timeline_items:
         timeline_data.append({
@@ -5865,6 +5939,49 @@ def api_delete_link(link_id):
     db.session.commit()
 
     return jsonify({'message': '友链删除成功'})
+
+# 文件上传API
+@app.route('/api/admin/upload', methods=['POST'])
+def api_upload_file():
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': '未授权'}), 401
+
+    if 'file' not in request.files:
+        return jsonify({'error': '没有选择文件'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': '没有选择文件'}), 400
+
+    if file and allowed_file(file.filename):
+        try:
+            # 确保上传目录存在
+            upload_folder = app.config['UPLOAD_FOLDER']
+            if not os.path.exists(upload_folder):
+                os.makedirs(upload_folder)
+
+            # 生成安全的文件名
+            filename = secure_filename(file.filename)
+            # 添加时间戳避免重名
+            name, ext = os.path.splitext(filename)
+            filename = f"{name}_{int(time.time())}{ext}"
+
+            # 保存文件
+            file_path = os.path.join(upload_folder, filename)
+            file.save(file_path)
+
+            # 返回文件URL
+            file_url = f"/static/uploads/{filename}"
+            return jsonify({
+                'message': '文件上传成功',
+                'file_url': file_url,
+                'filename': filename
+            })
+
+        except Exception as e:
+            return jsonify({'error': f'文件上传失败: {str(e)}'}), 500
+    else:
+        return jsonify({'error': '不支持的文件类型，请上传 PNG、JPG、JPEG、GIF 或 WEBP 格式的图片'}), 400
 
 if __name__ == '__main__':
     print("="*60)
