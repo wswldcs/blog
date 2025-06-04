@@ -225,12 +225,13 @@ def main():
     # 创建路由
     create_routes(app)
     
-    # 获取端口
-    port = int(os.environ.get('PORT', 5000))
-    
+    # 获取端口 - Railway通常使用PORT环境变量
+    port = int(os.environ.get('PORT', 8080))
+
     print(f"🌐 应用将在端口 {port} 启动")
     print("🔧 简化版博客已启动")
-    
+    print(f"🔗 Railway PORT环境变量: {os.environ.get('PORT', '未设置')}")
+
     # 启动应用
     app.run(host='0.0.0.0', port=port, debug=False)
 
