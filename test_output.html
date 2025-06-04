@@ -1,0 +1,1411 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>wswldcs的个人博客 - 记录生活，分享技术，探索世界</title>
+    <meta name="description" content="记录生活，分享技术，探索世界">
+    <meta name="author" content="wswldcs">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --success-color: #4ecdc4;
+            --warning-color: #ffe66d;
+            --danger-color: #ff6b6b;
+            --dark-color: #2c3e50;
+            --light-color: #f8f9fa;
+            --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            --gradient-accent: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            background: var(--gradient-primary) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-md);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white !important;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 500;
+            margin: 0 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        /* Hero区域 */
+        .hero-section {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 100px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="rgba(255,255,255,0.1)"><polygon points="1000,100 1000,0 0,100"/></svg>');
+            background-size: cover;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .hero-stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* 卡片样式 */
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            background: white;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .card-header {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            border-radius: 50px;
+            font-weight: 500;
+            padding: 0.75rem 2rem;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--gradient-accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            background: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* 标签样式 */
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            margin: 0.25rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tag:hover {
+            transform: translateY(-2px);
+            text-decoration: none;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-title {
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 天气组件 */
+        .weather-widget {
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .weather-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .weather-temp {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .weather-desc {
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+
+        /* 日历组件 */
+        .calendar-widget {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .calendar-header {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            text-align: center;
+        }
+
+        .calendar-day {
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-day:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .calendar-today {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* 访客信息 */
+        .visitor-info {
+            background: var(--gradient-accent);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .visitor-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .visitor-stat:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 项目卡片 */
+        .project-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .project-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .tech-badge {
+            background: var(--light-color);
+            color: var(--dark-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* 友情链接 */
+        .friend-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--dark-color);
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .friend-link:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow-md);
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .friend-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 1rem;
+            background: var(--light-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 页脚 */
+        .footer {
+            background: var(--dark-color);
+            color: white;
+            padding: 3rem 0 2rem;
+            margin-top: 5rem;
+        }
+
+        .footer-section {
+            margin-bottom: 2rem;
+        }
+
+        .footer-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .social-links a {
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .sidebar {
+                margin-top: 2rem;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-blog me-2"></i>wswldcs的个人博客
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-home me-1"></i>首页
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/blog">
+                            <i class="fas fa-blog me-1"></i>博客
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/projects">
+                            <i class="fas fa-code me-1"></i>项目
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/timeline">
+                            <i class="fas fa-history me-1"></i>历程
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/links">
+                            <i class="fas fa-link me-1"></i>友链
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">
+                            <i class="fas fa-user me-1"></i>关于
+                        </a>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">
+                            <i class="fas fa-cog me-1"></i>管理
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero区域 -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content text-center">
+                <h1 class="hero-title fade-in-up">wswldcs的个人空间</h1>
+                <p class="hero-subtitle fade-in-up">记录生活，分享技术，探索世界</p>
+
+                <div class="hero-stats fade-in-up">
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">1</span>
+                        <span class="hero-stat-label">篇文章</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">0</span>
+                        <span class="hero-stat-label">位访客</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">1</span>
+                        <span class="hero-stat-label">次浏览</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">0</span>
+                        <span class="hero-stat-label">条评论</span>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <a href="/blog" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-blog me-2"></i>阅读博客
+                    </a>
+                    <a href="/about" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user me-2"></i>了解我
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 主要内容区域 -->
+    <div class="container py-5">
+        <div class="row">
+            <!-- 主内容区 -->
+            <div class="col-lg-8">
+                <!-- 精选文章 -->
+                
+                <section class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="section-title">
+                            <i class="fas fa-star text-warning me-2"></i>精选文章
+                        </h2>
+                        <a href="/blog" class="btn btn-outline-primary">查看更多</a>
+                    </div>
+
+                    <div class="row">
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 fade-in-up">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title">
+                                            <a href="/post/welcome-to-my-blog" class="text-decoration-none">
+                                                欢迎来到我的个人博客
+                                            </a>
+                                        </h5>
+                                        
+                                        <span class="badge" style="background-color: #007bff;">
+                                            <i class="fas fa-code me-1"></i>技术分享
+                                        </span>
+                                        
+                                    </div>
+
+                                    <p class="card-text text-muted">这是我的第一篇博客文章，介绍了博客的功能特性和技术栈。</p>
+
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-alt me-1"></i>
+                                            06月04日
+                                            <span class="ms-2">
+                                                <i class="fas fa-eye me-1"></i>1
+                                            </span>
+                                        </small>
+                                        <div>
+                                            
+                                            <span class="tag" style="background-color: #3776ab; color: white;">
+                                                Python
+                                            </span>
+                                            
+                                            <span class="tag" style="background-color: #000000; color: white;">
+                                                Flask
+                                            </span>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- 最新文章 -->
+                <section class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="section-title">
+                            <i class="fas fa-clock text-primary me-2"></i>最新文章
+                        </h2>
+                        <a href="/blog" class="btn btn-outline-primary">查看全部</a>
+                    </div>
+
+                    <div class="row">
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 fade-in-up">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <a href="/post/welcome-to-my-blog" class="text-decoration-none">
+                                            欢迎来到我的个人博客
+                                        </a>
+                                    </h6>
+                                    <p class="card-text small text-muted">这是我的第一篇博客文章，介绍了博客的功能特性和技术栈。</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            06-04
+                                        </small>
+                                        
+                                        <small class="badge" style="background-color: #007bff;">
+                                            技术分享
+                                        </small>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </section>
+
+                <!-- 最新项目 -->
+                
+                <section class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="section-title">
+                            <i class="fas fa-code text-success me-2"></i>最新项目
+                        </h2>
+                        <a href="/projects" class="btn btn-outline-primary">查看全部</a>
+                    </div>
+
+                    <div class="row">
+                        
+                        <div class="col-md-4 mb-4">
+                            <div class="project-card fade-in-up">
+                                <h6 class="project-title">个人博客系统</h6>
+                                <p class="text-muted small">基于Flask的功能完整的个人博客系统，支持文章管理、分类标签、评论系统、访客统计、天气显示等丰富功能。...</p>
+                                <div class="project-tech">
+                                    
+                                    <span class="tech-badge">Python</span>
+                                    
+                                    <span class="tech-badge">Flask</span>
+                                    
+                                    <span class="tech-badge">MySQL</span>
+                                    
+                                </div>
+                                <div class="d-flex gap-2">
+                                    
+                                    <a href="https://github.com/wswldcs/blog" class="btn btn-sm btn-outline-dark" target="_blank">
+                                        <i class="fab fa-github"></i>
+                                    </a>
+                                    
+                                    
+                                    <a href="https://wswldcs.edu.deal" class="btn btn-sm btn-primary" target="_blank">
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-4">
+                            <div class="project-card fade-in-up">
+                                <h6 class="project-title">Vue.js 管理后台</h6>
+                                <p class="text-muted small">基于Vue.js和Element UI的现代化管理后台系统，支持权限管理、数据可视化等功能。...</p>
+                                <div class="project-tech">
+                                    
+                                    <span class="tech-badge">Vue.js</span>
+                                    
+                                    <span class="tech-badge">Element UI</span>
+                                    
+                                    <span class="tech-badge">Axios</span>
+                                    
+                                </div>
+                                <div class="d-flex gap-2">
+                                    
+                                    <a href="https://github.com/wswldcs/vue-admin" class="btn btn-sm btn-outline-dark" target="_blank">
+                                        <i class="fab fa-github"></i>
+                                    </a>
+                                    
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </section>
+                
+            </div>
+
+            <!-- 侧边栏 -->
+            <div class="col-lg-4">
+                <!-- 实时信息卡片 -->
+                <div class="sidebar fade-in-up">
+                    <h5 class="sidebar-title">
+                        <i class="fas fa-info-circle"></i>实时信息
+                    </h5>
+
+                    <!-- 当前时间 -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>当前时间</span>
+                            <span id="current-time">14:51:59</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>今天日期</span>
+                            <span>2025年06月04日</span>
+                        </div>
+                    </div>
+
+                    <!-- 天气信息 -->
+                    <div class="weather-widget" id="weather-widget">
+                        <div class="weather-icon">
+                            <i class="fas fa-cloud-sun"></i>
+                        </div>
+                        <div class="weather-temp" id="weather-temp">加载中...</div>
+                        <div class="weather-desc" id="weather-desc">获取天气信息中</div>
+                        <div class="mt-2">
+                            <small id="weather-location">北京</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 访客统计 -->
+                <div class="visitor-info fade-in-up">
+                    <h6 class="mb-3">
+                        <i class="fas fa-users me-2"></i>访客统计
+                    </h6>
+                    <div class="visitor-stat">
+                        <span>今日访客</span>
+                        <span id="today-visitors">0</span>
+                    </div>
+                    <div class="visitor-stat">
+                        <span>总访客数</span>
+                        <span>0</span>
+                    </div>
+                    <div class="visitor-stat">
+                        <span>您的位置</span>
+                        <span id="visitor-location">获取中...</span>
+                    </div>
+                    <div class="visitor-stat">
+                        <span>与我距离</span>
+                        <span id="visitor-distance">计算中...</span>
+                    </div>
+                </div>
+
+                <!-- 日历组件 -->
+                <div class="calendar-widget fade-in-up">
+                    <div class="calendar-header">
+                        2025年June
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="text-muted small">日</div>
+                        <div class="text-muted small">一</div>
+                        <div class="text-muted small">二</div>
+                        <div class="text-muted small">三</div>
+                        <div class="text-muted small">四</div>
+                        <div class="text-muted small">五</div>
+                        <div class="text-muted small">六</div>
+
+                        
+                            
+                                
+                                <div class="calendar-day"></div>
+                                
+                            
+                                
+                                <div class="calendar-day"></div>
+                                
+                            
+                                
+                                <div class="calendar-day"></div>
+                                
+                            
+                                
+                                <div class="calendar-day"></div>
+                                
+                            
+                                
+                                <div class="calendar-day"></div>
+                                
+                            
+                                
+                                <div class="calendar-day"></div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    1
+                                </div>
+                                
+                            
+                        
+                            
+                                
+                                <div class="calendar-day ">
+                                    2
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    3
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day calendar-today">
+                                    4
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    5
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    6
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    7
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    8
+                                </div>
+                                
+                            
+                        
+                            
+                                
+                                <div class="calendar-day ">
+                                    9
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    10
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    11
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    12
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    13
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    14
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    15
+                                </div>
+                                
+                            
+                        
+                            
+                                
+                                <div class="calendar-day ">
+                                    16
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    17
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    18
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    19
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    20
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    21
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    22
+                                </div>
+                                
+                            
+                        
+                            
+                                
+                                <div class="calendar-day ">
+                                    23
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    24
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    25
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    26
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    27
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    28
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day ">
+                                    29
+                                </div>
+                                
+                            
+                        
+                            
+                                
+                                <div class="calendar-day ">
+                                    30
+                                </div>
+                                
+                            
+                                
+                                <div class="calendar-day"></div>
+                                
+                            
+                                
+                                <div class="calendar-day"></div>
+                                
+                            
+                                
+                                <div class="calendar-day"></div>
+                                
+                            
+                                
+                                <div class="calendar-day"></div>
+                                
+                            
+                                
+                                <div class="calendar-day"></div>
+                                
+                            
+                                
+                                <div class="calendar-day"></div>
+                                
+                            
+                        
+                    </div>
+                </div>
+
+                <!-- 分类标签 -->
+                <div class="sidebar fade-in-up">
+                    <h5 class="sidebar-title">
+                        <i class="fas fa-folder"></i>文章分类
+                    </h5>
+                    
+                    <a href="/blog?category=1"
+                       class="tag d-inline-block mb-2"
+                       style="background-color: #007bff; color: white;">
+                        <i class="fas fa-code me-1"></i>技术分享
+                    </a>
+                    
+                    <a href="/blog?category=2"
+                       class="tag d-inline-block mb-2"
+                       style="background-color: #28a745; color: white;">
+                        <i class="fas fa-heart me-1"></i>生活随笔
+                    </a>
+                    
+                    <a href="/blog?category=3"
+                       class="tag d-inline-block mb-2"
+                       style="background-color: #ffc107; color: white;">
+                        <i class="fas fa-book me-1"></i>学习笔记
+                    </a>
+                    
+                    <a href="/blog?category=4"
+                       class="tag d-inline-block mb-2"
+                       style="background-color: #dc3545; color: white;">
+                        <i class="fas fa-rocket me-1"></i>项目实战
+                    </a>
+                    
+                    <a href="/blog?category=5"
+                       class="tag d-inline-block mb-2"
+                       style="background-color: #6f42c1; color: white;">
+                        <i class="fas fa-tools me-1"></i>工具推荐
+                    </a>
+                    
+                    <a href="/blog?category=6"
+                       class="tag d-inline-block mb-2"
+                       style="background-color: #fd7e14; color: white;">
+                        <i class="fas fa-camera me-1"></i>旅行游记
+                    </a>
+                    
+                </div>
+
+                <!-- 标签云 -->
+                <div class="sidebar fade-in-up">
+                    <h5 class="sidebar-title">
+                        <i class="fas fa-tags"></i>热门标签
+                    </h5>
+                    
+                    <a href="/blog?tag=1"
+                       class="tag"
+                       style="background-color: #3776ab; color: white;">
+                        Python
+                    </a>
+                    
+                    <a href="/blog?tag=2"
+                       class="tag"
+                       style="background-color: #000000; color: white;">
+                        Flask
+                    </a>
+                    
+                    <a href="/blog?tag=3"
+                       class="tag"
+                       style="background-color: #f7df1e; color: white;">
+                        JavaScript
+                    </a>
+                    
+                    <a href="/blog?tag=4"
+                       class="tag"
+                       style="background-color: #4fc08d; color: white;">
+                        Vue.js
+                    </a>
+                    
+                    <a href="/blog?tag=5"
+                       class="tag"
+                       style="background-color: #61dafb; color: white;">
+                        React
+                    </a>
+                    
+                    <a href="/blog?tag=6"
+                       class="tag"
+                       style="background-color: #4479a1; color: white;">
+                        MySQL
+                    </a>
+                    
+                    <a href="/blog?tag=7"
+                       class="tag"
+                       style="background-color: #2496ed; color: white;">
+                        Docker
+                    </a>
+                    
+                    <a href="/blog?tag=8"
+                       class="tag"
+                       style="background-color: #fcc624; color: white;">
+                        Linux
+                    </a>
+                    
+                    <a href="/blog?tag=9"
+                       class="tag"
+                       style="background-color: #61dafb; color: white;">
+                        前端开发
+                    </a>
+                    
+                    <a href="/blog?tag=10"
+                       class="tag"
+                       style="background-color: #68217a; color: white;">
+                        后端开发
+                    </a>
+                    
+                    <a href="/blog?tag=11"
+                       class="tag"
+                       style="background-color: #ff6b6b; color: white;">
+                        全栈开发
+                    </a>
+                    
+                    <a href="/blog?tag=12"
+                       class="tag"
+                       style="background-color: #336791; color: white;">
+                        数据库
+                    </a>
+                    
+                    <a href="/blog?tag=13"
+                       class="tag"
+                       style="background-color: #ff9500; color: white;">
+                        算法
+                    </a>
+                    
+                    <a href="/blog?tag=14"
+                       class="tag"
+                       style="background-color: #ff6b35; color: white;">
+                        机器学习
+                    </a>
+                    
+                    <a href="/blog?tag=15"
+                       class="tag"
+                       style="background-color: #4ecdc4; color: white;">
+                        人工智能
+                    </a>
+                    
+                </div>
+
+                <!-- 友情链接 -->
+                
+                <div class="sidebar fade-in-up">
+                    <h5 class="sidebar-title">
+                        <i class="fas fa-heart"></i>友情链接
+                    </h5>
+                    
+                    <a href="https://example.com" class="friend-link" target="_blank">
+                        <div class="friend-avatar">
+                            
+                            <i class="fas fa-user"></i>
+                            
+                        </div>
+                        <div>
+                            <div class="fw-bold">小明的博客</div>
+                            
+                            <small class="text-muted">我的好朋友，专注后端开发</small>
+                            
+                        </div>
+                    </a>
+                    
+                    <div class="text-center mt-3">
+                        <a href="/links" class="btn btn-sm btn-outline-primary">查看更多</a>
+                    </div>
+                </div>
+                
+
+                <!-- 最近访客 -->
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 footer-section">
+                    <h5 class="footer-title">wswldcs的个人博客</h5>
+                    <p class="text-muted">记录生活，分享技术，探索世界</p>
+                    <div class="social-links">
+                        <a href="https://github.com/wswldcs" target="_blank" title="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="#" target="_blank" title="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" target="_blank" title="LinkedIn">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="mailto:your-email@example.com" title="Email">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-md-4 footer-section">
+                    <h5 class="footer-title">快速导航</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/blog" class="text-muted text-decoration-none">博客文章</a></li>
+                        <li><a href="/projects" class="text-muted text-decoration-none">项目展示</a></li>
+                        <li><a href="/timeline" class="text-muted text-decoration-none">学习历程</a></li>
+                        <li><a href="/links" class="text-muted text-decoration-none">友情链接</a></li>
+                        <li><a href="/about" class="text-muted text-decoration-none">关于我</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-4 footer-section">
+                    <h5 class="footer-title">站点统计</h5>
+                    <ul class="list-unstyled text-muted">
+                        <li>文章总数：1</li>
+                        <li>访客总数：0</li>
+                        <li>浏览总数：1</li>
+                        <li>评论总数：0</li>
+                    </ul>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="text-muted mb-0">
+                        © 2025 wswldcs的个人博客. All rights reserved.
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted mb-0">
+                        Powered by Flask & Railway
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 实时时间更新
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-CN');
+            document.getElementById('current-time').textContent = timeString;
+        }
+
+        // 每秒更新时间
+        setInterval(updateTime, 1000);
+
+        // 获取天气信息
+        async function loadWeather() {
+            try {
+                const response = await fetch('/api/weather?city=Beijing');
+                const data = await response.json();
+
+                if (data && !data.error) {
+                    const temp = Math.round(data.main.temp);
+                    const desc = data.weather[0].description;
+                    const location = data.name;
+
+                    document.getElementById('weather-temp').textContent = temp + '°C';
+                    document.getElementById('weather-desc').textContent = desc;
+                    document.getElementById('weather-location').textContent = location;
+
+                    // 根据天气更新图标
+                    const iconElement = document.querySelector('.weather-icon i');
+                    const weatherId = data.weather[0].id;
+                    if (weatherId < 300) {
+                        iconElement.className = 'fas fa-bolt';
+                    } else if (weatherId < 600) {
+                        iconElement.className = 'fas fa-cloud-rain';
+                    } else if (weatherId < 700) {
+                        iconElement.className = 'fas fa-snowflake';
+                    } else if (weatherId === 800) {
+                        iconElement.className = 'fas fa-sun';
+                    } else {
+                        iconElement.className = 'fas fa-cloud';
+                    }
+                }
+            } catch (error) {
+                console.log('天气信息获取失败:', error);
+                document.getElementById('weather-temp').textContent = '--°C';
+                document.getElementById('weather-desc').textContent = '天气信息暂不可用';
+            }
+        }
+
+        // 获取访客位置信息
+        async function loadVisitorInfo() {
+            try {
+                // 尝试获取用户地理位置
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(async function(position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+
+                        // 计算与博主的距离
+                        const authorLat = 39.9042;
+                        const authorLon = 116.4074;
+                        const distance = calculateDistance(lat, lon, authorLat, authorLon);
+
+                        document.getElementById('visitor-distance').textContent = Math.round(distance) + ' km';
+
+                        // 获取地理位置名称
+                        try {
+                            const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=zh`);
+                            const data = await response.json();
+                            const location = data.city || data.locality || data.countryName || '未知位置';
+                            document.getElementById('visitor-location').textContent = location;
+                        } catch (error) {
+                            document.getElementById('visitor-location').textContent = '位置获取失败';
+                        }
+                    }, function(error) {
+                        document.getElementById('visitor-location').textContent = '位置权限被拒绝';
+                        document.getElementById('visitor-distance').textContent = '无法计算';
+                    });
+                } else {
+                    document.getElementById('visitor-location').textContent = '浏览器不支持定位';
+                    document.getElementById('visitor-distance').textContent = '无法计算';
+                }
+
+                // 获取访客统计
+                const statsResponse = await fetch('/api/visitor-stats');
+                const statsData = await statsResponse.json();
+                document.getElementById('today-visitors').textContent = statsData.today_visitors;
+
+            } catch (error) {
+                console.log('访客信息获取失败:', error);
+            }
+        }
+
+        // 计算两点间距离（Haversine公式）
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // 地球半径（公里）
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadWeather();
+            loadVisitorInfo();
+
+            // 添加滚动动画
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // 观察所有需要动画的元素
+            document.querySelectorAll('.fade-in-up').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'all 0.6s ease-out';
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>

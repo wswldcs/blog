@@ -1877,8 +1877,870 @@ INDEX_TEMPLATE = '''
 </html>
 '''
 
-# 其他模板（简化版本，使用相同的基础样式）
-BLOG_TEMPLATE = LOGIN_TEMPLATE = PROJECTS_TEMPLATE = ABOUT_TEMPLATE = TIMELINE_TEMPLATE = LINKS_TEMPLATE = ADMIN_DASHBOARD_TEMPLATE = POST_TEMPLATE = INDEX_TEMPLATE
+# 博客列表页面模板
+BLOG_TEMPLATE = '''
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>博客文章 - {{ config.BLOG_TITLE }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-blog me-2"></i>{{ config.BLOG_TITLE }}
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">首页</a>
+                <a class="nav-link" href="{{ url_for('blog') }}">博客</a>
+                <a class="nav-link" href="{{ url_for('projects') }}">项目</a>
+                <a class="nav-link" href="{{ url_for('about') }}">关于</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <h1 class="mb-4">博客文章</h1>
+
+        <!-- 搜索和筛选 -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <form method="GET" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="搜索文章..." value="{{ search_query or '' }}">
+                    <button type="submit" class="btn btn-primary">搜索</button>
+                </form>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" onchange="location.href='{{ url_for('blog') }}?category=' + this.value">
+                    <option value="">所有分类</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if current_category == category.id %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- 文章列表 -->
+        <div class="row">
+            {% for post in posts.items %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{{ url_for('post', slug=post.slug) }}" class="text-decoration-none">
+                                {{ post.title }}
+                            </a>
+                        </h5>
+                        <p class="card-text">{{ post.summary or post.content[:150] + '...' }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>{{ post.created_at.strftime('%Y-%m-%d') }}
+                                <i class="fas fa-eye ms-2 me-1"></i>{{ post.view_count }}
+                            </small>
+                            {% if post.category %}
+                            <span class="badge" style="background-color: {{ post.category.color }};">
+                                {{ post.category.name }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 分页 -->
+        {% if posts.pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if posts.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('blog', page=posts.prev_num) }}">上一页</a>
+                </li>
+                {% endif %}
+
+                {% for page_num in posts.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != posts.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('blog', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if posts.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('blog', page=posts.next_num) }}">下一页</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</body>
+</html>
+'''
+
+# 项目展示页面模板
+PROJECTS_TEMPLATE = '''
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>项目展示 - {{ config.BLOG_TITLE }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .project-card {
+            background: white; border-radius: 15px; padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s ease; height: 100%;
+        }
+        .project-card:hover { transform: translateY(-10px); }
+        .tech-badge {
+            background: #f8f9fa; color: #495057; padding: 0.25rem 0.75rem;
+            border-radius: 50px; font-size: 0.875rem; margin: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-blog me-2"></i>{{ config.BLOG_TITLE }}
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">首页</a>
+                <a class="nav-link" href="{{ url_for('blog') }}">博客</a>
+                <a class="nav-link" href="{{ url_for('projects') }}">项目</a>
+                <a class="nav-link" href="{{ url_for('about') }}">关于</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <h1 class="mb-4">项目展示</h1>
+
+        <!-- 精选项目 -->
+        {% if featured_projects %}
+        <h2 class="mb-4">精选项目</h2>
+        <div class="row mb-5">
+            {% for project in featured_projects %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="project-card">
+                    <h5 class="mb-3">{{ project.name }}</h5>
+                    <p class="text-muted">{{ project.description }}</p>
+                    <div class="mb-3">
+                        {% for tech in project.get_tech_list() %}
+                        <span class="tech-badge">{{ tech }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="d-flex gap-2">
+                        {% if project.github_url %}
+                        <a href="{{ project.github_url }}" class="btn btn-outline-dark btn-sm" target="_blank">
+                            <i class="fab fa-github me-1"></i>GitHub
+                        </a>
+                        {% endif %}
+                        {% if project.demo_url %}
+                        <a href="{{ project.demo_url }}" class="btn btn-primary btn-sm" target="_blank">
+                            <i class="fas fa-external-link-alt me-1"></i>演示
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            状态:
+                            {% if project.status == 'completed' %}
+                            <span class="badge bg-success">已完成</span>
+                            {% elif project.status == 'in_progress' %}
+                            <span class="badge bg-warning">进行中</span>
+                            {% else %}
+                            <span class="badge bg-secondary">计划中</span>
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- 其他项目 -->
+        {% if other_projects %}
+        <h2 class="mb-4">其他项目</h2>
+        <div class="row">
+            {% for project in other_projects %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="project-card">
+                    <h6 class="mb-3">{{ project.name }}</h6>
+                    <p class="text-muted small">{{ project.description }}</p>
+                    <div class="mb-3">
+                        {% for tech in project.get_tech_list()[:3] %}
+                        <span class="tech-badge">{{ tech }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="d-flex gap-2">
+                        {% if project.github_url %}
+                        <a href="{{ project.github_url }}" class="btn btn-outline-dark btn-sm" target="_blank">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        {% endif %}
+                        {% if project.demo_url %}
+                        <a href="{{ project.demo_url }}" class="btn btn-primary btn-sm" target="_blank">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+'''
+
+# 时间线页面模板
+TIMELINE_TEMPLATE = '''
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>学习历程 - {{ config.BLOG_TITLE }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .timeline { position: relative; padding: 2rem 0; }
+        .timeline::before {
+            content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+        }
+        .timeline-item { position: relative; margin-bottom: 3rem; }
+        .timeline-content {
+            background: white; border-radius: 15px; padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 45%;
+        }
+        .timeline-item:nth-child(odd) .timeline-content { margin-left: 55%; }
+        .timeline-item:nth-child(even) .timeline-content { margin-right: 55%; }
+        .timeline-icon {
+            position: absolute; left: 50%; top: 1rem; transform: translateX(-50%);
+            width: 50px; height: 50px; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; color: white; font-size: 1.2rem;
+        }
+        .timeline-date {
+            position: absolute; left: 50%; top: 4rem; transform: translateX(-50%);
+            background: white; padding: 0.5rem 1rem; border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-blog me-2"></i>{{ config.BLOG_TITLE }}
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">首页</a>
+                <a class="nav-link" href="{{ url_for('blog') }}">博客</a>
+                <a class="nav-link" href="{{ url_for('projects') }}">项目</a>
+                <a class="nav-link" href="{{ url_for('timeline') }}">历程</a>
+                <a class="nav-link" href="{{ url_for('about') }}">关于</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <h1 class="text-center mb-5">学习历程</h1>
+
+        <div class="timeline">
+            {% for year, items in timeline_by_year.items() %}
+            <div class="text-center mb-4">
+                <h2 class="text-primary">{{ year }}年</h2>
+            </div>
+            {% for item in items %}
+            <div class="timeline-item">
+                <div class="timeline-icon" style="background-color: {{ item.color }};">
+                    <i class="{{ item.icon }}"></i>
+                </div>
+                <div class="timeline-date">
+                    <small class="text-muted">{{ item.date.strftime('%m月%d日') }}</small>
+                </div>
+                <div class="timeline-content">
+                    <h5 class="mb-3">{{ item.title }}</h5>
+                    <p class="text-muted">{{ item.description }}</p>
+                    <span class="badge" style="background-color: {{ item.color }};">
+                        {% if item.category == 'education' %}学习
+                        {% elif item.category == 'work' %}工作
+                        {% elif item.category == 'project' %}项目
+                        {% else %}生活{% endif %}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
+'''
+
+# 友情链接页面模板
+LINKS_TEMPLATE = '''
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>友情链接 - {{ config.BLOG_TITLE }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .link-card {
+            background: white; border-radius: 15px; padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s ease;
+            text-decoration: none; color: inherit; display: block; height: 100%;
+        }
+        .link-card:hover {
+            transform: translateY(-5px); text-decoration: none; color: inherit;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .link-avatar {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.5rem; margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-blog me-2"></i>{{ config.BLOG_TITLE }}
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">首页</a>
+                <a class="nav-link" href="{{ url_for('blog') }}">博客</a>
+                <a class="nav-link" href="{{ url_for('projects') }}">项目</a>
+                <a class="nav-link" href="{{ url_for('links') }}">友链</a>
+                <a class="nav-link" href="{{ url_for('about') }}">关于</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <h1 class="mb-5">友情链接</h1>
+
+        <!-- 朋友链接 -->
+        {% if friend_links %}
+        <h2 class="mb-4">朋友们</h2>
+        <div class="row mb-5">
+            {% for link in friend_links %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <a href="{{ link.url }}" class="link-card" target="_blank">
+                    <div class="link-avatar">
+                        {% if link.avatar %}
+                        <img src="{{ link.avatar }}" alt="{{ link.name }}" class="w-100 h-100 rounded-circle">
+                        {% else %}
+                        <i class="fas fa-user"></i>
+                        {% endif %}
+                    </div>
+                    <h5 class="mb-2">{{ link.name }}</h5>
+                    <p class="text-muted small">{{ link.description or '暂无描述' }}</p>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- 推荐网站 -->
+        {% if recommend_links %}
+        <h2 class="mb-4">推荐网站</h2>
+        <div class="row mb-5">
+            {% for link in recommend_links %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <a href="{{ link.url }}" class="link-card" target="_blank">
+                    <div class="link-avatar">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h5 class="mb-2">{{ link.name }}</h5>
+                    <p class="text-muted small">{{ link.description or '暂无描述' }}</p>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- 工具网站 -->
+        {% if tool_links %}
+        <h2 class="mb-4">实用工具</h2>
+        <div class="row">
+            {% for link in tool_links %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <a href="{{ link.url }}" class="link-card" target="_blank">
+                    <div class="link-avatar">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h5 class="mb-2">{{ link.name }}</h5>
+                    <p class="text-muted small">{{ link.description or '暂无描述' }}</p>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
+'''
+
+# 关于页面模板
+ABOUT_TEMPLATE = '''
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>关于我 - {{ config.BLOG_TITLE }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .about-card {
+            background: white; border-radius: 15px; padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 2rem;
+        }
+        .skill-bar {
+            background: #f8f9fa; border-radius: 10px; height: 10px;
+            overflow: hidden; margin-bottom: 1rem;
+        }
+        .skill-progress {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            height: 100%; border-radius: 10px; transition: width 1s ease;
+        }
+        .avatar {
+            width: 150px; height: 150px; border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 3rem; margin: 0 auto 2rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-blog me-2"></i>{{ config.BLOG_TITLE }}
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">首页</a>
+                <a class="nav-link" href="{{ url_for('blog') }}">博客</a>
+                <a class="nav-link" href="{{ url_for('projects') }}">项目</a>
+                <a class="nav-link" href="{{ url_for('about') }}">关于</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="about-card text-center">
+                    <div class="avatar">
+                        {% if author and author.avatar and author.avatar != 'default.jpg' %}
+                        <img src="{{ author.avatar }}" alt="{{ author.username }}" class="w-100 h-100 rounded-circle">
+                        {% else %}
+                        <i class="fas fa-user"></i>
+                        {% endif %}
+                    </div>
+                    <h3>{{ config.AUTHOR_NAME }}</h3>
+                    <p class="text-muted">{{ author.bio if author else '热爱技术的开发者' }}</p>
+
+                    <div class="d-flex justify-content-center gap-3 mt-3">
+                        {% if author and author.github %}
+                        <a href="https://github.com/{{ author.github }}" class="btn btn-outline-dark" target="_blank">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        {% endif %}
+                        {% if author and author.twitter %}
+                        <a href="https://twitter.com/{{ author.twitter }}" class="btn btn-outline-info" target="_blank">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        {% endif %}
+                        {% if author and author.linkedin %}
+                        <a href="https://linkedin.com/in/{{ author.linkedin }}" class="btn btn-outline-primary" target="_blank">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        {% endif %}
+                        {% if author and author.website %}
+                        <a href="{{ author.website }}" class="btn btn-outline-success" target="_blank">
+                            <i class="fas fa-globe"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="about-card">
+                    <h2 class="mb-4">关于我</h2>
+                    <p>你好！我是{{ config.AUTHOR_NAME }}，一名热爱技术的开发者。</p>
+                    <p>我专注于Web开发，喜欢学习新技术，乐于分享技术心得和生活感悟。这个博客是我记录学习历程、分享技术经验的地方。</p>
+                    <p>希望我的分享能对你有所帮助，也欢迎与我交流讨论！</p>
+                </div>
+
+                <div class="about-card">
+                    <h3 class="mb-4">技能水平</h3>
+                    {% for skill, level in tech_stats.items() %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>{{ skill }}</span>
+                            <span>{{ level }}%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" style="width: {{ level }}%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="about-card">
+                    <h3 class="mb-4">联系方式</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><i class="fas fa-envelope me-2"></i>{{ config.AUTHOR_EMAIL }}</p>
+                            <p><i class="fas fa-map-marker-alt me-2"></i>{{ config.AUTHOR_LOCATION }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if author and author.github %}
+                            <p><i class="fab fa-github me-2"></i>{{ author.github }}</p>
+                            {% endif %}
+                            {% if author and author.website %}
+                            <p><i class="fas fa-globe me-2"></i>{{ author.website }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+'''
+
+# 文章详情页面模板
+POST_TEMPLATE = '''
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ post.title }} - {{ config.BLOG_TITLE }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .post-content {
+            background: white; border-radius: 15px; padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); line-height: 1.8;
+        }
+        .post-content h1, .post-content h2, .post-content h3 {
+            color: #2c3e50; margin-top: 2rem; margin-bottom: 1rem;
+        }
+        .post-content pre {
+            background: #f8f9fa; border-radius: 10px; padding: 1rem;
+            border-left: 4px solid #667eea;
+        }
+        .post-meta {
+            background: white; border-radius: 15px; padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 2rem;
+        }
+        .related-post {
+            background: white; border-radius: 10px; padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 1rem;
+            text-decoration: none; color: inherit; display: block;
+        }
+        .related-post:hover {
+            transform: translateY(-3px); text-decoration: none; color: inherit;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-blog me-2"></i>{{ config.BLOG_TITLE }}
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">首页</a>
+                <a class="nav-link" href="{{ url_for('blog') }}">博客</a>
+                <a class="nav-link" href="{{ url_for('projects') }}">项目</a>
+                <a class="nav-link" href="{{ url_for('about') }}">关于</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="post-meta">
+                    <h1>{{ post.title }}</h1>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>{{ post.created_at.strftime('%Y年%m月%d日') }}
+                                <i class="fas fa-eye ms-3 me-1"></i>{{ post.view_count }} 次浏览
+                                {% if post.category %}
+                                <span class="badge ms-3" style="background-color: {{ post.category.color }};">
+                                    <i class="{{ post.category.icon }} me-1"></i>{{ post.category.name }}
+                                </span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% if post.tags %}
+                    <div class="mt-3">
+                        {% for tag in post.tags %}
+                        <span class="badge me-1" style="background-color: {{ tag.color }};">
+                            {{ tag.name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="post-content">
+                    {{ post.get_html_content() | safe }}
+                </div>
+
+                <!-- 评论区 -->
+                <div class="mt-5">
+                    <h3>评论 ({{ comments|length }})</h3>
+                    {% for comment in comments %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ comment.author_name }}</strong>
+                                <small class="text-muted">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <p class="mt-2">{{ comment.content }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- 相关文章 -->
+                {% if related_posts %}
+                <div class="mb-4">
+                    <h5 class="mb-3">相关文章</h5>
+                    {% for related in related_posts %}
+                    <a href="{{ url_for('post', slug=related.slug) }}" class="related-post">
+                        <h6>{{ related.title }}</h6>
+                        <small class="text-muted">{{ related.created_at.strftime('%m-%d') }}</small>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
+'''
+
+LOGIN_TEMPLATE = '''
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>管理登录 - {{ config.BLOG_TITLE }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 3rem;
+            width: 100%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2 class="text-center mb-4">管理员登录</h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-danger">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <div class="mb-3">
+                <label for="username" class="form-label">用户名</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">密码</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">登录</button>
+        </form>
+        <div class="text-center mt-3">
+            <a href="{{ url_for('index') }}" class="text-muted">返回首页</a>
+        </div>
+    </div>
+</body>
+</html>
+'''
+
+ADMIN_DASHBOARD_TEMPLATE = '''
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>管理后台 - {{ config.BLOG_TITLE }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('admin_dashboard') }}">
+                <i class="fas fa-cog me-2"></i>管理后台
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">
+                    <i class="fas fa-home me-1"></i>返回首页
+                </a>
+                <a class="nav-link" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt me-1"></i>退出
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <h1 class="mb-4">管理后台</h1>
+
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-primary">{{ dashboard_stats.total_posts }}</h3>
+                        <p class="mb-0">总文章数</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-success">{{ dashboard_stats.published_posts }}</h3>
+                        <p class="mb-0">已发布</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-warning">{{ dashboard_stats.total_visitors }}</h3>
+                        <p class="mb-0">总访客</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="text-info">{{ dashboard_stats.total_comments }}</h3>
+                        <p class="mb-0">总评论</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">最新文章</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for post in recent_posts %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>{{ post.title }}</span>
+                            <small class="text-muted">{{ post.created_at.strftime('%m-%d') }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">最新评论</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for comment in recent_comments %}
+                        <div class="mb-2">
+                            <strong>{{ comment.author_name }}</strong>
+                            <p class="mb-1 small">{{ comment.content[:50] }}...</p>
+                            <small class="text-muted">{{ comment.created_at.strftime('%m-%d %H:%M') }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+'''
 
 if __name__ == '__main__':
     print("="*60)

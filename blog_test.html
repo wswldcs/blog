@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>博客文章 - wswldcs的个人博客</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-blog me-2"></i>wswldcs的个人博客
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">首页</a>
+                <a class="nav-link" href="/blog">博客</a>
+                <a class="nav-link" href="/projects">项目</a>
+                <a class="nav-link" href="/about">关于</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <h1 class="mb-4">博客文章</h1>
+
+        <!-- 搜索和筛选 -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <form method="GET" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="搜索文章..." value="">
+                    <button type="submit" class="btn btn-primary">搜索</button>
+                </form>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" onchange="location.href='/blog?category=' + this.value">
+                    <option value="">所有分类</option>
+                    
+                    <option value="1" >
+                        技术分享
+                    </option>
+                    
+                    <option value="2" >
+                        生活随笔
+                    </option>
+                    
+                    <option value="3" >
+                        学习笔记
+                    </option>
+                    
+                    <option value="4" >
+                        项目实战
+                    </option>
+                    
+                    <option value="5" >
+                        工具推荐
+                    </option>
+                    
+                    <option value="6" >
+                        旅行游记
+                    </option>
+                    
+                </select>
+            </div>
+        </div>
+
+        <!-- 文章列表 -->
+        <div class="row">
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="/post/welcome-to-my-blog" class="text-decoration-none">
+                                欢迎来到我的个人博客
+                            </a>
+                        </h5>
+                        <p class="card-text">这是我的第一篇博客文章，介绍了博客的功能特性和技术栈。</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>2025-06-04
+                                <i class="fas fa-eye ms-2 me-1"></i>2
+                            </small>
+                            
+                            <span class="badge" style="background-color: #007bff;">
+                                技术分享
+                            </span>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- 分页 -->
+        
+    </div>
+</body>
+</html>
