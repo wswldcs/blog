@@ -4619,7 +4619,9 @@ ADMIN_DASHBOARD_TEMPLATE = '''
         // 加载文章列表
         async function loadPosts() {
             try {
-                const response = await fetch('/api/admin/posts');
+                const response = await fetch('/api/admin/posts', {
+                    credentials: 'same-origin'
+                });
                 const data = await response.json();
 
                 if (data.posts) {
@@ -4654,7 +4656,9 @@ ADMIN_DASHBOARD_TEMPLATE = '''
         // 加载分类列表
         async function loadCategories() {
             try {
-                const response = await fetch('/api/admin/categories');
+                const response = await fetch('/api/admin/categories', {
+                    credentials: 'same-origin'
+                });
                 const data = await response.json();
 
                 if (data.categories) {
@@ -4671,12 +4675,30 @@ ADMIN_DASHBOARD_TEMPLATE = '''
             // 先加载分类数据
             let categoriesOptions = '<option value="">选择分类</option>';
             try {
-                const response = await fetch('/api/admin/categories');
-                const data = await response.json();
-                if (data.categories) {
-                    data.categories.forEach(category => {
-                        categoriesOptions += `<option value="${category.id}">${category.name}</option>`;
-                    });
+                const response = await fetch('/api/admin/categories', {
+                    method: 'GET',
+                    credentials: 'same-origin',  // 确保发送cookies
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                console.log('分类API响应状态:', response.status); // 调试用
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('分类数据:', data); // 调试用
+
+                    if (data.categories && data.categories.length > 0) {
+                        data.categories.forEach(category => {
+                            categoriesOptions += `<option value="${category.id}">${category.name}</option>`;
+                        });
+                    } else {
+                        console.log('没有找到分类数据');
+                    }
+                } else {
+                    const errorData = await response.json();
+                    console.error('分类API错误:', errorData);
                 }
             } catch (error) {
                 console.error('加载分类失败:', error);
@@ -4783,6 +4805,7 @@ ADMIN_DASHBOARD_TEMPLATE = '''
             try {
                 const response = await fetch('/api/admin/posts', {
                     method: 'POST',
+                    credentials: 'same-origin',  // 确保发送cookies
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -4838,7 +4861,9 @@ ADMIN_DASHBOARD_TEMPLATE = '''
         // 加载个人信息
         async function loadProfile() {
             try {
-                const response = await fetch('/api/admin/profile');
+                const response = await fetch('/api/admin/profile', {
+                    credentials: 'same-origin'
+                });
                 const data = await response.json();
 
                 if (data.profile) {
@@ -4873,6 +4898,7 @@ ADMIN_DASHBOARD_TEMPLATE = '''
             try {
                 const response = await fetch('/api/admin/profile', {
                     method: 'PUT',
+                    credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -5068,7 +5094,7 @@ def api_admin_categories():
             'description': category.description,
             'color': category.color,
             'icon': category.icon,
-            'post_count': len(category.posts)
+            'post_count': category.posts.count()  # 使用count()方法而不是len()
         })
 
     return jsonify({'categories': categories_data})
