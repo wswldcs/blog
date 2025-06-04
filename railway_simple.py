@@ -17,11 +17,30 @@ login = LoginManager()
 def create_simple_app():
     """创建简化的Flask应用"""
     app = Flask(__name__)
-    
+
     # 基本配置
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'railway-secret-key')
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+
+    # MySQL数据库配置
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url:
+        # Railway MySQL数据库
+        app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    else:
+        # 本地MySQL配置
+        mysql_host = os.environ.get('MYSQL_HOST', 'localhost')
+        mysql_user = os.environ.get('MYSQL_USER', 'root')
+        mysql_password = os.environ.get('MYSQL_PASSWORD', '1234')
+        mysql_database = os.environ.get('MYSQL_DATABASE', 'aublog')
+        app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{mysql_user}:{mysql_password}@{mysql_host}/{mysql_database}'
+
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'pool_timeout': 20,
+        'max_overflow': 0
+    }
     
     # 博客配置
     app.config['BLOG_TITLE'] = os.environ.get('BLOG_TITLE', '我的个人博客')
@@ -64,10 +83,22 @@ def init_database(app):
     """初始化数据库"""
     with app.app_context():
         try:
+            print("🔗 数据库连接信息:")
+            print(f"   DATABASE_URL: {os.environ.get('DATABASE_URL', '未设置')}")
+            print(f"   SQLALCHEMY_DATABASE_URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
+
+            # 测试数据库连接
+            with db.engine.connect() as conn:
+                conn.execute(db.text('SELECT 1'))
+            print("✅ 数据库连接成功")
+
+            # 创建所有表
             db.create_all()
-            
+            print("✅ 数据库表创建成功")
+
             # 创建默认管理员
             if not User.query.first():
+                print("🔧 创建默认数据...")
                 admin = User(
                     username='admin',
                     email='admin@example.com',
@@ -75,24 +106,28 @@ def init_database(app):
                 )
                 admin.set_password('admin123')
                 db.session.add(admin)
-                
+
                 # 创建示例文章
                 post = Post(
                     title='欢迎来到我的博客',
-                    content='这是第一篇文章！',
+                    content='这是第一篇文章，使用MySQL数据库！',
                     slug='welcome',
                     is_published=True
                 )
                 db.session.add(post)
-                
+
                 db.session.commit()
-                print("✅ 数据库初始化成功")
+                print("✅ 默认数据创建成功")
                 print("📝 管理员账号: admin")
                 print("🔑 管理员密码: admin123")
-            
+            else:
+                print("✅ 数据库已有数据，跳过初始化")
+
             return True
         except Exception as e:
             print(f"❌ 数据库初始化失败: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
 def create_routes(app):
