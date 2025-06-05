@@ -1090,37 +1090,85 @@ def admin_account():
             flash('当前密码错误！', 'error')
             return redirect(url_for('admin_account'))
 
-        # 更新用户名
+        # 验证用户名
         if new_username and new_username != user.username:
+            # 基本验证
+            if len(new_username) < 3:
+                flash('用户名长度至少3位！', 'error')
+                return redirect(url_for('admin_account'))
+
+            if len(new_username) > 50:
+                flash('用户名长度不能超过50位！', 'error')
+                return redirect(url_for('admin_account'))
+
+            import re
+            if not re.match(r'^[a-zA-Z0-9_-]+$', new_username):
+                flash('用户名只能包含字母、数字、下划线和连字符！', 'error')
+                return redirect(url_for('admin_account'))
+
             # 检查用户名是否已存在
             existing_user = User.query.filter_by(username=new_username).first()
             if existing_user and existing_user.id != user.id:
                 flash('用户名已存在！', 'error')
                 return redirect(url_for('admin_account'))
+
             user.username = new_username
 
-        # 更新邮箱
+        # 验证邮箱
         if new_email and new_email != user.email:
+            import re
+            if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', new_email):
+                flash('邮箱格式不正确！', 'error')
+                return redirect(url_for('admin_account'))
+
             # 检查邮箱是否已存在
             existing_user = User.query.filter_by(email=new_email).first()
             if existing_user and existing_user.id != user.id:
                 flash('邮箱已存在！', 'error')
                 return redirect(url_for('admin_account'))
+
             user.email = new_email
 
-        # 更新密码
+        # 验证密码
         if new_password:
             if new_password != confirm_password:
                 flash('两次输入的密码不一致！', 'error')
                 return redirect(url_for('admin_account'))
-            if len(new_password) < 6:
-                flash('密码长度至少6位！', 'error')
+
+            if len(new_password) < 8:
+                flash('密码长度至少8位！', 'error')
                 return redirect(url_for('admin_account'))
+
+            # 密码强度检查
+            import re
+            strength_issues = []
+            if not re.search(r'[a-z]', new_password):
+                strength_issues.append('小写字母')
+            if not re.search(r'[A-Z]', new_password):
+                strength_issues.append('大写字母')
+            if not re.search(r'[0-9]', new_password):
+                strength_issues.append('数字')
+
+            if strength_issues:
+                flash(f'密码强度不足，缺少：{", ".join(strength_issues)}', 'error')
+                return redirect(url_for('admin_account'))
+
+            # 检查常见弱密码
+            weak_passwords = ['password', '123456', '12345678', 'qwerty', 'abc123', 'password123', 'admin123']
+            if new_password.lower() in weak_passwords:
+                flash('请不要使用常见的弱密码！', 'error')
+                return redirect(url_for('admin_account'))
+
             user.set_password(new_password)
 
         try:
             db.session.commit()
             flash('账号信息更新成功！', 'success')
+
+            # 如果用户名或密码发生变化，提醒用户
+            if new_username or new_password:
+                flash('登录凭据已更改，请使用新的信息重新登录！', 'info')
+
         except Exception as e:
             db.session.rollback()
             flash(f'更新失败：{str(e)}', 'error')
@@ -9416,14 +9464,22 @@ ADMIN_ACCOUNT_TEMPLATE = '''
 
                             <div class="mb-3">
                                 <label class="form-label">新用户名</label>
-                                <input type="text" class="form-control" name="username"
-                                       value="{{ user.username }}" placeholder="留空则不修改">
+                                <input type="text" class="form-control" name="username" id="newUsername"
+                                       value="{{ user.username }}" placeholder="输入您想要的用户名">
+                                <small class="text-muted">
+                                    用户名要求：3-50位，只能包含字母、数字、下划线和连字符
+                                </small>
+                                <div id="usernameValidation" class="mt-1"></div>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">新邮箱</label>
-                                <input type="email" class="form-control" name="email"
-                                       value="{{ user.email }}" placeholder="留空则不修改">
+                                <input type="email" class="form-control" name="email" id="newEmail"
+                                       value="{{ user.email }}" placeholder="输入您的邮箱地址">
+                                <small class="text-muted">
+                                    请输入有效的邮箱地址
+                                </small>
+                                <div id="emailValidation" class="mt-1"></div>
                             </div>
 
                             <hr style="border-color: rgba(102, 126, 234, 0.3);">
@@ -9519,6 +9575,59 @@ ADMIN_ACCOUNT_TEMPLATE = '''
 
         document.getElementById('newPassword').addEventListener('input', checkPasswordMatch);
         document.getElementById('confirmPassword').addEventListener('input', checkPasswordMatch);
+
+        // 用户名验证
+        document.getElementById('newUsername').addEventListener('input', function() {
+            const username = this.value;
+            const validation = document.getElementById('usernameValidation');
+
+            if (username.length === 0) {
+                validation.innerHTML = '';
+                return;
+            }
+
+            if (username.length < 3) {
+                validation.innerHTML = '<small class="text-danger">用户名至少3位</small>';
+                return;
+            }
+
+            if (username.length > 50) {
+                validation.innerHTML = '<small class="text-danger">用户名不能超过50位</small>';
+                return;
+            }
+
+            if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+                validation.innerHTML = '<small class="text-danger">只能包含字母、数字、下划线和连字符</small>';
+                return;
+            }
+
+            const commonNames = ['admin', 'administrator', 'root', 'user', 'test', 'guest'];
+            if (commonNames.includes(username.toLowerCase())) {
+                validation.innerHTML = '<small class="text-warning">建议使用更独特的用户名</small>';
+                return;
+            }
+
+            validation.innerHTML = '<small class="text-success">✓ 用户名格式正确</small>';
+        });
+
+        // 邮箱验证
+        document.getElementById('newEmail').addEventListener('input', function() {
+            const email = this.value;
+            const validation = document.getElementById('emailValidation');
+
+            if (email.length === 0) {
+                validation.innerHTML = '';
+                return;
+            }
+
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailRegex.test(email)) {
+                validation.innerHTML = '<small class="text-danger">邮箱格式不正确</small>';
+                return;
+            }
+
+            validation.innerHTML = '<small class="text-success">✓ 邮箱格式正确</small>';
+        });
     </script>
 </body>
 </html>
