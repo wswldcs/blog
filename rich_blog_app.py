@@ -1164,7 +1164,8 @@ INDEX_TEMPLATE = '''
             border-radius: 15px;
             box-shadow: var(--shadow-lg);
             transition: all 0.3s ease;
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             overflow: hidden;
         }
 
@@ -1183,6 +1184,20 @@ INDEX_TEMPLATE = '''
         .card-title {
             font-weight: 600;
             margin-bottom: 0.5rem;
+            color: #1e293b !important;
+        }
+
+        .card-title a {
+            color: #1e293b !important;
+            text-decoration: none;
+        }
+
+        .card-title a:hover {
+            color: #667eea !important;
+        }
+
+        .card-text {
+            color: #475569 !important;
         }
 
         /* 按钮样式 */
@@ -1339,7 +1354,9 @@ INDEX_TEMPLATE = '''
 
         /* 项目卡片 */
         .project-card {
-            background: white;
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
             border-radius: 15px;
             padding: 2rem;
             box-shadow: var(--shadow-lg);
@@ -1350,12 +1367,67 @@ INDEX_TEMPLATE = '''
         .project-card:hover {
             transform: translateY(-5px);
             box-shadow: var(--shadow-xl);
+            border-color: rgba(102, 126, 234, 0.5);
         }
 
         .project-title {
             font-weight: 600;
             margin-bottom: 1rem;
-            color: var(--dark-color);
+            color: #f8fafc !important;
+        }
+
+        /* 项目卡片文字可读性 */
+        .project-card .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        .project-card p {
+            color: #e2e8f0 !important;
+        }
+
+        .project-card h6 {
+            color: #f8fafc !important;
+        }
+
+        /* 全局文字可读性修复 */
+        .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        .card .text-muted {
+            color: #6b7280 !important;
+        }
+
+        /* 管理后台文字可读性 */
+        .admin-content .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        .table .text-muted {
+            color: #6b7280 !important;
+        }
+
+        .sidebar .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        .calendar-widget .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        /* 确保所有小文字都有足够对比度 */
+        small.text-muted {
+            color: #94a3b8 !important;
+        }
+
+        /* 访客信息区域文字 */
+        .visitor-info small {
+            color: #94a3b8 !important;
+        }
+
+        /* 友情链接描述文字 */
+        .friend-link small {
+            color: #94a3b8 !important;
         }
 
         .project-tech {
@@ -1408,10 +1480,11 @@ INDEX_TEMPLATE = '''
 
         /* 页脚 */
         .footer {
-            background: var(--dark-color);
-            color: white;
+            background: rgba(15, 23, 42, 0.95);
+            color: #f8fafc;
             padding: 3rem 0 2rem;
             margin-top: 5rem;
+            border-top: 1px solid rgba(102, 126, 234, 0.3);
         }
 
         .footer-section {
@@ -1421,6 +1494,33 @@ INDEX_TEMPLATE = '''
         .footer-title {
             font-weight: 600;
             margin-bottom: 1rem;
+            color: #e2e8f0 !important;
+        }
+
+        /* 页脚文字可读性修复 */
+        .footer .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        .footer .text-muted:hover {
+            color: #e2e8f0 !important;
+        }
+
+        .footer a {
+            color: #94a3b8 !important;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #e2e8f0 !important;
+        }
+
+        .footer ul li {
+            color: #94a3b8 !important;
+        }
+
+        .footer p {
+            color: #94a3b8 !important;
         }
 
         .social-links a {
