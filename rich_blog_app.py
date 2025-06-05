@@ -167,6 +167,8 @@ class Project(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def get_tech_list(self):
+        if not self.tech_stack:
+            return []
         return [tech.strip() for tech in self.tech_stack.split(',') if tech.strip()]
 
 class Link(db.Model):
@@ -697,6 +699,27 @@ def index():
     # 最近访客
     recent_visitors = Visitor.query.order_by(Visitor.last_visit.desc()).limit(10).all()
 
+    # 当前时间
+    current_time = datetime.now()
+
+    # 统计数据
+    stats = {
+        'total_posts': Post.query.count(),
+        'total_visitors': Visitor.query.count(),
+        'total_views': sum(post.view_count for post in Post.query.all()),
+        'total_comments': Comment.query.count()
+    }
+
+    # 日历数据
+    import calendar
+    now = datetime.now()
+    cal = calendar.monthcalendar(now.year, now.month)
+    calendar_data = {
+        'calendar_data': cal,
+        'month_name': calendar.month_name[now.month],
+        'year': now.year
+    }
+
     return render_template_string(INDEX_TEMPLATE,
                                 featured_posts=featured_posts,
                                 recent_posts=recent_posts,
@@ -704,7 +727,10 @@ def index():
                                 tags=tags,
                                 recent_projects=recent_projects,
                                 friend_links=friend_links,
-                                recent_visitors=recent_visitors)
+                                recent_visitors=recent_visitors,
+                                current_time=current_time,
+                                stats=stats,
+                                **calendar_data)
 
 @app.route('/blog')
 def blog():
@@ -774,6 +800,24 @@ def projects():
     return render_template_string(PROJECTS_TEMPLATE,
                                 featured_projects=featured_projects,
                                 other_projects=other_projects)
+
+@app.route('/project/<int:project_id>')
+def project_detail(project_id):
+    """项目详情页面"""
+    try:
+        project = Project.query.get_or_404(project_id)
+
+        # 获取相关项目（同技术栈或随机推荐）
+        related_projects = Project.query.filter(
+            Project.id != project_id,
+            Project.is_featured == True
+        ).limit(3).all()
+
+        return render_template_string(PROJECT_DETAIL_TEMPLATE,
+                                    project=project,
+                                    related_projects=related_projects)
+    except Exception as e:
+        return f"<h1>项目详情</h1><p>项目ID: {project_id}</p><p>错误: {str(e)}</p>", 500
 
 @app.route('/timeline')
 def timeline():
@@ -1200,6 +1244,22 @@ INDEX_TEMPLATE = '''
             color: #475569 !important;
         }
 
+        /* 主页区域标题样式 */
+        .section-title {
+            color: #f8fafc !important;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* 主页内容区域背景 */
+        .main-content .container {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
         /* 按钮样式 */
         .btn {
             border-radius: 50px;
@@ -1381,13 +1441,41 @@ INDEX_TEMPLATE = '''
             color: #94a3b8 !important;
         }
 
-        .project-card p {
+        .project-card p,
+        .project-card .project-description {
             color: #e2e8f0 !important;
+            font-size: 0.9rem;
+            line-height: 1.5;
         }
 
-        .project-card h6 {
+        .project-card h6,
+        .project-card .project-title {
             color: #f8fafc !important;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
         }
+
+        .project-card .btn {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .project-card .btn-outline-light {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #f8fafc;
+        }
+
+        .project-card .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: #ffffff;
+        }
+
+
+
+
+
+
 
         /* 全局文字可读性修复 */
         .text-muted {
@@ -1524,15 +1612,34 @@ INDEX_TEMPLATE = '''
         }
 
         .social-links a {
-            color: white;
+            color: #f8fafc !important;
             font-size: 1.5rem;
             margin-right: 1rem;
             transition: all 0.3s ease;
+            text-decoration: none;
         }
 
         .social-links a:hover {
-            color: var(--primary-color);
+            color: var(--primary-color) !important;
             transform: translateY(-2px);
+        }
+
+        /* 页脚文字对比度优化 */
+        .footer-title {
+            color: #f8fafc !important;
+            font-weight: 600;
+        }
+
+        .footer .text-muted {
+            color: #cbd5e1 !important;
+        }
+
+        .footer a.text-muted {
+            color: #cbd5e1 !important;
+        }
+
+        .footer a.text-muted:hover {
+            color: #f8fafc !important;
         }
 
         /* 鼠标跟随动画效果 */
@@ -1840,7 +1947,7 @@ INDEX_TEMPLATE = '''
                                             {{ post.title }}
                                         </a>
                                     </h6>
-                                    <p class="card-text small text-muted">{{ post.summary or post.content[:80] + '...' }}</p>
+                                    <p class="card-text small text-muted">{{ post.summary or (post.content[:80] + '...' if post.content else '暂无内容') }}</p>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <small class="text-muted">
                                             {{ post.created_at.strftime('%m-%d') }}
@@ -1859,44 +1966,76 @@ INDEX_TEMPLATE = '''
                 </section>
 
                 <!-- 最新项目 -->
-                {% if recent_projects %}
-                <section class="mb-5">
+                <section class="mb-5 fade-in-up">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 class="section-title">
-                            <i class="fas fa-code text-success me-2"></i>最新项目
+                            <i class="fas fa-code text-success me-2"></i>最新项目 ({{ recent_projects|length }})
                         </h2>
                         <a href="{{ url_for('projects') }}" class="btn btn-outline-primary">查看全部</a>
                     </div>
 
+
+
                     <div class="row">
                         {% for project in recent_projects %}
                         <div class="col-md-4 mb-4">
-                            <div class="project-card fade-in-up">
-                                <h6 class="project-title">{{ project.name }}</h6>
-                                <p class="text-muted small">{{ project.description[:80] + '...' }}</p>
+                            <div class="project-card fade-in-up" style="cursor: pointer;" onclick="window.location.href='/project/{{ project.id }}'">
+                                <h6 class="project-title" style="color: #f8fafc !important; font-weight: 600;">{{ project.name }}</h6>
+                                <p class="project-description" style="color: #e2e8f0 !important; font-size: 0.9rem;">{{ (project.description[:80] + '...' if project.description and project.description|length > 80 else (project.description or '暂无描述')) }}</p>
                                 <div class="project-tech">
                                     {% for tech in project.get_tech_list()[:3] %}
-                                    <span class="tech-badge">{{ tech }}</span>
+                                    <span class="tech-badge" style="background: rgba(102, 126, 234, 0.2); color: #667eea; border: 1px solid rgba(102, 126, 234, 0.3); padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem; margin: 0.25rem;">{{ tech }}</span>
                                     {% endfor %}
                                 </div>
-                                <div class="d-flex gap-2">
+                                <div class="d-flex gap-2 mt-3 project-buttons">
+                                    <!-- GitHub按钮 - 有链接时显示 -->
                                     {% if project.github_url %}
-                                    <a href="{{ project.github_url }}" class="btn btn-sm btn-outline-dark" target="_blank">
-                                        <i class="fab fa-github"></i>
+                                    <a href="{{ project.github_url }}" class="btn btn-sm btn-primary" target="_blank" onclick="event.stopPropagation();">
+                                        <i class="fab fa-github me-1"></i>GitHub
                                     </a>
                                     {% endif %}
+
+                                    <!-- 演示按钮 - 始终显示 -->
                                     {% if project.demo_url %}
-                                    <a href="{{ project.demo_url }}" class="btn btn-sm btn-primary" target="_blank">
-                                        <i class="fas fa-external-link-alt"></i>
+                                    <a href="{{ project.demo_url }}" class="btn btn-sm btn-primary" target="_blank" onclick="event.stopPropagation();">
+                                        <i class="fas fa-external-link-alt me-1"></i>演示
                                     </a>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); showDemoUnavailableModal();">
+                                        <i class="fas fa-external-link-alt me-1"></i>演示
+                                    </button>
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
+                        {% if not recent_projects %}
+                        <!-- 如果没有项目数据，显示占位内容 -->
+                        <div class="col-md-4 mb-4">
+                            <div class="project-card fade-in-up" onclick="location.href='/projects'" style="cursor: pointer;">
+                                <h6 class="project-title" style="color: #f8fafc !important; font-weight: 600;">个人博客系统</h6>
+                                <p class="project-description" style="color: #e2e8f0 !important; font-size: 0.9rem;">基于Flask的功能完整的个人博客系统，支持文章管理、分类标签、评论系统等。</p>
+                                <div class="project-tech">
+                                    <span class="tech-badge" style="background: rgba(102, 126, 234, 0.2); color: #667eea; border: 1px solid rgba(102, 126, 234, 0.3); padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem; margin: 0.25rem;">Python</span>
+                                    <span class="tech-badge" style="background: rgba(102, 126, 234, 0.2); color: #667eea; border: 1px solid rgba(102, 126, 234, 0.3); padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem; margin: 0.25rem;">Flask</span>
+                                    <span class="tech-badge" style="background: rgba(102, 126, 234, 0.2); color: #667eea; border: 1px solid rgba(102, 126, 234, 0.3); padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.8rem; margin: 0.25rem;">MySQL</span>
+                                </div>
+                                <div class="d-flex gap-2 mt-3 project-buttons">
+                                    <!-- GitHub按钮 -->
+                                    <a href="https://github.com/wswldcs" class="btn btn-sm btn-primary" target="_blank" onclick="event.stopPropagation();">
+                                        <i class="fab fa-github me-1"></i>GitHub
+                                    </a>
+
+                                    <!-- 演示按钮 - 弹窗提示 -->
+                                    <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); showDemoUnavailableModal();">
+                                        <i class="fas fa-external-link-alt me-1"></i>演示
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </section>
-                {% endif %}
             </div>
 
             <!-- 侧边栏 -->
@@ -1939,7 +2078,7 @@ INDEX_TEMPLATE = '''
                     </h6>
                     <div class="visitor-stat">
                         <span>今日访客</span>
-                        <span id="today-visitors">{{ stats.total_visitors }}</span>
+                        <span id="today-visitors">0</span>
                     </div>
                     <div class="visitor-stat">
                         <span>总访客数</span>
@@ -2506,7 +2645,34 @@ INDEX_TEMPLATE = '''
                 }
             });
         });
+
+        // 演示不可用弹窗函数
+        function showDemoUnavailableModal() {
+            const modal = new bootstrap.Modal(document.getElementById('demoUnavailableModal'));
+            modal.show();
+        }
     </script>
+
+    <!-- 演示不可用弹窗 -->
+    <div class="modal fade" id="demoUnavailableModal" tabindex="-1" aria-labelledby="demoUnavailableModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 15px;">
+                <div class="modal-header border-0" style="padding: 2rem 2rem 1rem;">
+                    <h5 class="modal-title text-white" id="demoUnavailableModalLabel">
+                        <i class="fas fa-info-circle me-2"></i>演示提示
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center" style="padding: 1rem 2rem 2rem;">
+                    <div class="mb-3">
+                        <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                    </div>
+                    <p class="text-white mb-0" style="font-size: 1.1rem;">该项目演示暂时无法访问</p>
+                    <p class="text-white-50 mt-2">请稍后再试或查看项目源码</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 '''
@@ -3276,7 +3442,7 @@ PROJECTS_TEMPLATE = '''
                 <div class="row">
                     {% for project in featured_projects %}
                     <div class="col-md-6 col-lg-4 mb-4 fade-in-up">
-                        <div class="project-card">
+                        <div class="project-card" onclick="location.href='{{ url_for('project_detail', project_id=project.id) }}'" style="cursor: pointer;">
                             <div class="project-status
                                 {% if project.status == 'completed' %}status-completed
                                 {% elif project.status == 'in_progress' %}status-progress
@@ -3301,16 +3467,23 @@ PROJECTS_TEMPLATE = '''
                                 {% endfor %}
                             </div>
 
-                            <div class="d-flex gap-2 mt-auto">
+                            <div class="d-flex gap-2 mt-auto project-buttons">
+                                <!-- GitHub按钮 - 有链接时显示 -->
                                 {% if project.github_url %}
-                                <a href="{{ project.github_url }}" class="btn btn-cool btn-sm flex-grow-1" target="_blank">
+                                <a href="{{ project.github_url }}" class="btn btn-sm btn-primary" target="_blank" onclick="event.stopPropagation();">
                                     <i class="fab fa-github me-1"></i>GitHub
                                 </a>
                                 {% endif %}
+
+                                <!-- 演示按钮 - 始终显示 -->
                                 {% if project.demo_url %}
-                                <a href="{{ project.demo_url }}" class="btn btn-cool btn-sm flex-grow-1" target="_blank">
+                                <a href="{{ project.demo_url }}" class="btn btn-sm btn-primary" target="_blank" onclick="event.stopPropagation();">
                                     <i class="fas fa-external-link-alt me-1"></i>演示
                                 </a>
+                                {% else %}
+                                <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); showDemoUnavailableModal();">
+                                    <i class="fas fa-external-link-alt me-1"></i>演示
+                                </button>
                                 {% endif %}
                             </div>
                         </div>
@@ -3329,7 +3502,7 @@ PROJECTS_TEMPLATE = '''
                 <div class="row">
                     {% for project in other_projects %}
                     <div class="col-md-6 col-lg-4 mb-4 fade-in-up">
-                        <div class="project-card">
+                        <div class="project-card" onclick="location.href='{{ url_for('project_detail', project_id=project.id) }}'" style="cursor: pointer;">
                             <div class="project-status
                                 {% if project.status == 'completed' %}status-completed
                                 {% elif project.status == 'in_progress' %}status-progress
@@ -3354,16 +3527,23 @@ PROJECTS_TEMPLATE = '''
                                 {% endfor %}
                             </div>
 
-                            <div class="d-flex gap-2 mt-auto">
+                            <div class="d-flex gap-2 mt-auto project-buttons">
+                                <!-- GitHub按钮 - 有链接时显示 -->
                                 {% if project.github_url %}
-                                <a href="{{ project.github_url }}" class="btn btn-cool btn-sm" target="_blank">
-                                    <i class="fab fa-github"></i>
+                                <a href="{{ project.github_url }}" class="btn btn-sm btn-primary" target="_blank" onclick="event.stopPropagation();">
+                                    <i class="fab fa-github me-1"></i>GitHub
                                 </a>
                                 {% endif %}
+
+                                <!-- 演示按钮 - 始终显示 -->
                                 {% if project.demo_url %}
-                                <a href="{{ project.demo_url }}" class="btn btn-cool btn-sm" target="_blank">
-                                    <i class="fas fa-external-link-alt"></i>
+                                <a href="{{ project.demo_url }}" class="btn btn-sm btn-primary" target="_blank" onclick="event.stopPropagation();">
+                                    <i class="fas fa-external-link-alt me-1"></i>演示
                                 </a>
+                                {% else %}
+                                <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); showDemoUnavailableModal();">
+                                    <i class="fas fa-external-link-alt me-1"></i>演示
+                                </button>
                                 {% endif %}
                             </div>
                         </div>
@@ -3408,6 +3588,362 @@ PROJECTS_TEMPLATE = '''
     </div>
 
     ''' + BASE_JAVASCRIPT + '''
+
+    <!-- 演示不可用弹窗 -->
+    <div class="modal fade" id="demoUnavailableModal" tabindex="-1" aria-labelledby="demoUnavailableModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 15px;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title text-white" id="demoUnavailableModalLabel">
+                        <i class="fas fa-info-circle me-2"></i>演示说明
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                    </div>
+                    <h6 class="text-white mb-3">暂时无法演示</h6>
+                    <p class="text-light opacity-75 mb-0">
+                        该项目演示功能暂时不可用，您可以查看源码了解项目详情。
+                    </p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-cool" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-1"></i>我知道了
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 演示不可用弹窗函数
+        function showDemoUnavailableModal() {
+            const modal = new bootstrap.Modal(document.getElementById('demoUnavailableModal'));
+            modal.show();
+        }
+    </script>
+</body>
+</html>
+'''
+
+# 项目详情页面模板
+PROJECT_DETAIL_TEMPLATE = '''
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ project.name }} - 项目详情 - {{ config.BLOG_TITLE }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    ''' + BASE_STYLES + '''
+    <style>
+        /* 项目详情页面样式 */
+        .project-hero {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .project-icon-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .project-status-large {
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .project-content {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .project-meta {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .tech-badge-large {
+            display: inline-block;
+            padding: 0.6rem 1.2rem;
+            margin: 0.3rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .related-project {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            height: 100%;
+        }
+
+        .related-project:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(102, 126, 234, 0.5);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .project-links .btn {
+            margin-right: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .project-description {
+            color: #e2e8f0 !important;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .project-title {
+            color: #f8fafc !important;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .meta-item:last-child {
+            border-bottom: none;
+        }
+
+        .meta-label {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .meta-value {
+            color: #f8fafc;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    ''' + NAVBAR_HTML + '''
+
+    <!-- 主要内容区域 -->
+    <div class="main-content">
+        <div class="container">
+            <!-- 项目头部 -->
+            <div class="project-hero fade-in-up">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="project-icon-large">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+
+                        <div class="project-status-large
+                            {% if project.status == 'completed' %}status-completed
+                            {% elif project.status == 'in_progress' %}status-progress
+                            {% else %}status-planned{% endif %}">
+                            {% if project.status == 'completed' %}✅ 项目已完成
+                            {% elif project.status == 'in_progress' %}🚧 开发中
+                            {% else %}📋 计划中{% endif %}
+                        </div>
+
+                        <h1 class="project-title">{{ project.name }}</h1>
+                        <p class="project-description">{{ project.description }}</p>
+
+                        <div class="project-links mt-4 d-flex gap-2 flex-wrap">
+                            <!-- GitHub按钮 - 有链接时显示 -->
+                            {% if project.github_url %}
+                            <a href="{{ project.github_url }}" class="btn btn-sm btn-primary" target="_blank">
+                                <i class="fab fa-github me-1"></i>GitHub
+                            </a>
+                            {% endif %}
+
+                            <!-- 演示按钮 - 始终显示 -->
+                            {% if project.demo_url %}
+                            <a href="{{ project.demo_url }}" class="btn btn-sm btn-primary" target="_blank">
+                                <i class="fas fa-external-link-alt me-1"></i>演示
+                            </a>
+                            {% else %}
+                            <button class="btn btn-sm btn-primary" onclick="showDemoUnavailableModal();">
+                                <i class="fas fa-external-link-alt me-1"></i>演示
+                            </button>
+                            {% endif %}
+
+                            <a href="{{ url_for('projects') }}" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-arrow-left me-1"></i>返回项目列表
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="project-meta">
+                            <h6 class="text-white mb-3">
+                                <i class="fas fa-info-circle me-2"></i>项目信息
+                            </h6>
+
+                            <div class="meta-item">
+                                <span class="meta-label">创建时间</span>
+                                <span class="meta-value">{{ project.created_at.strftime('%Y年%m月%d日') if project.created_at else '未知' }}</span>
+                            </div>
+
+                            <div class="meta-item">
+                                <span class="meta-label">项目状态</span>
+                                <span class="meta-value">
+                                    {% if project.status == 'completed' %}已完成
+                                    {% elif project.status == 'in_progress' %}开发中
+                                    {% else %}计划中{% endif %}
+                                </span>
+                            </div>
+
+                            <div class="meta-item">
+                                <span class="meta-label">是否精选</span>
+                                <span class="meta-value">{{ '是' if project.is_featured else '否' }}</span>
+                            </div>
+
+                            {% if project.technologies %}
+                            <div class="mt-3">
+                                <h6 class="text-white mb-2">技术栈</h6>
+                                <div>
+                                    {% for tech in project.get_tech_list() %}
+                                    <span class="tech-badge-large">{{ tech }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 项目详细内容 -->
+            {% if project.content %}
+            <div class="project-content fade-in-up">
+                <h3 class="text-white mb-4">
+                    <i class="fas fa-file-alt me-2"></i>项目详情
+                </h3>
+                <div class="project-description">
+                    {{ project.content|safe }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 相关项目推荐 -->
+            {% if related_projects %}
+            <div class="fade-in-up">
+                <h3 class="text-white mb-4">
+                    <i class="fas fa-lightbulb me-2"></i>相关项目推荐
+                </h3>
+                <div class="row">
+                    {% for related in related_projects %}
+                    <div class="col-md-4 mb-4">
+                        <a href="{{ url_for('project_detail', project_id=related.id) }}" class="related-project">
+                            <h6 class="text-white mb-2">{{ related.name }}</h6>
+                            <p class="text-light opacity-75 small mb-3">{{ related.description[:100] + '...' if related.description|length > 100 else related.description }}</p>
+                            <div>
+                                {% for tech in related.get_tech_list()[:3] %}
+                                <span class="tech-badge">{{ tech }}</span>
+                                {% endfor %}
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    ''' + BASE_JAVASCRIPT + '''
+
+    <!-- 演示不可用弹窗 -->
+    <div class="modal fade" id="demoUnavailableModal" tabindex="-1" aria-labelledby="demoUnavailableModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 15px;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title text-white" id="demoUnavailableModalLabel">
+                        <i class="fas fa-info-circle me-2"></i>演示说明
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                    </div>
+                    <h6 class="text-white mb-3">暂时无法演示</h6>
+                    <p class="text-light opacity-75 mb-0">
+                        该项目演示功能暂时不可用，您可以查看源码了解项目详情。
+                    </p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-cool" data-bs-dismiss="modal">
+                        <i class="fas fa-check me-1"></i>我知道了
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 演示不可用弹窗函数
+        function showDemoUnavailableModal() {
+            const modal = new bootstrap.Modal(document.getElementById('demoUnavailableModal'));
+            modal.show();
+        }
+    </script>
 </body>
 </html>
 '''
@@ -8924,7 +9460,7 @@ if __name__ == '__main__':
     if init_database(app):
         port = int(os.environ.get('PORT', 8080))
         print(f"🌐 应用启动在端口: {port}")
-        app.run(host='0.0.0.0', port=port, debug=False)
+        app.run(host='0.0.0.0', port=port, debug=True)
     else:
         print("❌ 数据库初始化失败，应用退出")
         exit(1)
