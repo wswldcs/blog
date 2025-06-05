@@ -853,6 +853,40 @@ def about():
     # 获取博主信息
     author = User.query.filter_by(is_admin=True).first()
 
+    # 获取关于页面内容
+    config = SiteConfig.query.filter_by(key='site_config').first()
+    about_content = ''
+    if config and config.value:
+        import json
+        try:
+            settings_data = json.loads(config.value)
+            about_content = settings_data.get('about_content', '')
+        except:
+            pass
+
+    # 如果没有自定义内容，使用默认内容
+    if not about_content:
+        about_content = '''
+        <h2>关于我</h2>
+        <p>我是一名即将毕业的数据分析专业学生，对数据科学和机器学习充满热情。</p>
+        <h3>技能专长</h3>
+        <ul>
+            <li>Python数据分析 (Pandas, NumPy, Matplotlib)</li>
+            <li>SQL数据库查询和优化</li>
+            <li>机器学习算法应用</li>
+            <li>数据可视化 (Tableau, Power BI)</li>
+            <li>统计分析和假设检验</li>
+        </ul>
+        <h3>教育背景</h3>
+        <p>数据科学专业 | 2021.9 - 2025.6</p>
+        <h3>联系方式</h3>
+        <p>如果您对我的项目感兴趣或有合作意向，欢迎通过以下方式联系我：</p>
+        <ul>
+            <li>邮箱：wswldcs@example.com</li>
+            <li>GitHub：https://github.com/wswldcs</li>
+        </ul>
+        '''
+
     # 技能统计
     tech_stats = {
         'Python': 90,
@@ -867,7 +901,8 @@ def about():
 
     return render_template_string(ABOUT_TEMPLATE,
                                 author=author,
-                                tech_stats=tech_stats)
+                                tech_stats=tech_stats,
+                                about_content=about_content)
 
 @app.route('/api/weather')
 def api_weather():
@@ -948,6 +983,151 @@ def admin_dashboard():
                                 dashboard_stats=dashboard_stats,
                                 recent_posts=recent_posts,
                                 recent_comments=recent_comments)
+
+@app.route('/admin/settings', methods=['GET', 'POST'])
+@login_required
+def admin_settings():
+    """系统设置"""
+    if request.method == 'POST':
+        # 获取或创建网站配置
+        config = SiteConfig.query.filter_by(key='site_config').first()
+        if not config:
+            config = SiteConfig(key='site_config')
+            db.session.add(config)
+
+        # 更新配置
+        settings_data = {
+            'site_title': request.form.get('site_title', ''),
+            'site_subtitle': request.form.get('site_subtitle', ''),
+            'author_name': request.form.get('author_name', ''),
+            'author_email': request.form.get('author_email', ''),
+            'github_url': request.form.get('github_url', ''),
+            'twitter_url': request.form.get('twitter_url', ''),
+            'linkedin_url': request.form.get('linkedin_url', ''),
+            'footer_text': request.form.get('footer_text', ''),
+            'analytics_code': request.form.get('analytics_code', ''),
+            'about_content': request.form.get('about_content', '')
+        }
+
+        import json
+        config.value = json.dumps(settings_data)
+        config.description = '网站基本配置信息'
+
+        try:
+            db.session.commit()
+            flash('设置保存成功！', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'保存失败：{str(e)}', 'error')
+
+        return redirect(url_for('admin_settings'))
+
+    # 获取当前配置
+    config = SiteConfig.query.filter_by(key='site_config').first()
+    settings_data = {}
+    if config and config.value:
+        import json
+        try:
+            settings_data = json.loads(config.value)
+        except:
+            settings_data = {}
+
+    # 设置默认值
+    default_settings = {
+        'site_title': 'wswldcs的个人博客',
+        'site_subtitle': '记录生活，分享技术，探索世界',
+        'author_name': 'wswldcs',
+        'author_email': 'wswldcs@example.com',
+        'github_url': 'https://github.com/wswldcs',
+        'twitter_url': '',
+        'linkedin_url': '',
+        'footer_text': '© 2025 wswldcs的个人博客. All rights reserved.',
+        'analytics_code': '',
+        'about_content': '''
+        <h2>关于我</h2>
+        <p>我是一名即将毕业的数据分析专业学生，对数据科学和机器学习充满热情。</p>
+        <h3>技能专长</h3>
+        <ul>
+            <li>Python数据分析 (Pandas, NumPy, Matplotlib)</li>
+            <li>SQL数据库查询和优化</li>
+            <li>机器学习算法应用</li>
+            <li>数据可视化 (Tableau, Power BI)</li>
+            <li>统计分析和假设检验</li>
+        </ul>
+        <h3>教育背景</h3>
+        <p>数据科学专业 | 2021.9 - 2025.6</p>
+        <h3>联系方式</h3>
+        <p>如果您对我的项目感兴趣或有合作意向，欢迎通过以下方式联系我：</p>
+        <ul>
+            <li>邮箱：wswldcs@example.com</li>
+            <li>GitHub：https://github.com/wswldcs</li>
+        </ul>
+        '''
+    }
+
+    # 合并默认值和当前设置
+    for key, default_value in default_settings.items():
+        if key not in settings_data:
+            settings_data[key] = default_value
+
+    return render_template_string(ADMIN_SETTINGS_TEMPLATE, settings=settings_data)
+
+@app.route('/admin/account', methods=['GET', 'POST'])
+@login_required
+def admin_account():
+    """账号管理"""
+    if request.method == 'POST':
+        current_password = request.form.get('current_password')
+        new_username = request.form.get('username')
+        new_email = request.form.get('email')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        user = current_user
+
+        # 验证当前密码
+        if not user.check_password(current_password):
+            flash('当前密码错误！', 'error')
+            return redirect(url_for('admin_account'))
+
+        # 更新用户名
+        if new_username and new_username != user.username:
+            # 检查用户名是否已存在
+            existing_user = User.query.filter_by(username=new_username).first()
+            if existing_user and existing_user.id != user.id:
+                flash('用户名已存在！', 'error')
+                return redirect(url_for('admin_account'))
+            user.username = new_username
+
+        # 更新邮箱
+        if new_email and new_email != user.email:
+            # 检查邮箱是否已存在
+            existing_user = User.query.filter_by(email=new_email).first()
+            if existing_user and existing_user.id != user.id:
+                flash('邮箱已存在！', 'error')
+                return redirect(url_for('admin_account'))
+            user.email = new_email
+
+        # 更新密码
+        if new_password:
+            if new_password != confirm_password:
+                flash('两次输入的密码不一致！', 'error')
+                return redirect(url_for('admin_account'))
+            if len(new_password) < 6:
+                flash('密码长度至少6位！', 'error')
+                return redirect(url_for('admin_account'))
+            user.set_password(new_password)
+
+        try:
+            db.session.commit()
+            flash('账号信息更新成功！', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'更新失败：{str(e)}', 'error')
+
+        return redirect(url_for('admin_account'))
+
+    return render_template_string(ADMIN_ACCOUNT_TEMPLATE, user=current_user)
 
 @app.route('/logout')
 @login_required
@@ -4655,26 +4835,8 @@ ABOUT_TEMPLATE = '''
 
                 <div class="col-lg-8">
                     <div class="about-card fade-in-up">
-                        <h2 class="mb-4 text-white">🎓 我的故事</h2>
                         <div class="text-light opacity-75">
-                            <p class="mb-3">
-                                你好！我是{{ config.AUTHOR_NAME }}，一名即将于2025年6月毕业的数据科学专业学生。
-                                从2021年9月踏入大学校园开始，我就对数据的魅力深深着迷。
-                            </p>
-                            <p class="mb-3">
-                                在过去的四年里，我系统学习了统计学、机器学习、数据挖掘等核心课程，
-                                熟练掌握了Python、SQL、Tableau等数据分析工具，
-                                完成了多个实际的数据分析项目。
-                            </p>
-                            <p class="mb-3">
-                                我相信数据是现代商业的石油，而数据分析师就是炼油师。
-                                我希望能够加入一家重视数据驱动决策的公司，
-                                用我的技能帮助企业从数据中发现价值，优化业务流程。
-                            </p>
-                            <p class="mb-0">
-                                这个博客记录了我的学习历程、项目经验和求职准备，
-                                希望能够展示我的专业能力，也希望能够帮助到同样在数据分析道路上前行的朋友们。
-                            </p>
+                            {{ about_content|safe }}
                         </div>
                     </div>
 
@@ -5995,8 +6157,13 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 </a>
             </li>
             <li class="sidebar-nav-item">
-                <a href="#settings" class="sidebar-nav-link" onclick="showSection('settings')">
+                <a href="{{ url_for('admin_settings') }}" class="sidebar-nav-link">
                     <i class="fas fa-cog"></i>系统设置
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="{{ url_for('admin_account') }}" class="sidebar-nav-link">
+                    <i class="fas fa-user-cog"></i>账号管理
                 </a>
             </li>
             <li class="sidebar-nav-item mt-4">
@@ -8838,6 +9005,520 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 alert('缓存清理功能开发中...');
             }
         }
+    </script>
+</body>
+</html>
+'''
+
+# 系统设置页面模板
+ADMIN_SETTINGS_TEMPLATE = '''
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>系统设置 - 管理后台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    ''' + BASE_STYLES + '''
+    <style>
+        .settings-card {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-control, .form-select {
+            background: rgba(15, 23, 42, 0.8) !important;
+            border: 1px solid rgba(102, 126, 234, 0.3) !important;
+            color: white !important;
+            border-radius: 10px !important;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(15, 23, 42, 0.9) !important;
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+            color: white !important;
+        }
+
+        .form-label {
+            color: #e2e8f0 !important;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .alert {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+    </style>
+</head>
+<body>
+    ''' + BASE_JAVASCRIPT + '''
+
+    <div class="main-content" style="padding: 2rem;">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="text-white">
+                    <i class="fas fa-cog me-2"></i>系统设置
+                </h1>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-left me-2"></i>返回管理后台
+                </a>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="settings-card">
+                            <h5 class="text-white mb-3">
+                                <i class="fas fa-globe me-2"></i>网站基本信息
+                            </h5>
+
+                            <div class="mb-3">
+                                <label class="form-label">网站标题</label>
+                                <input type="text" class="form-control" name="site_title"
+                                       value="{{ settings.site_title }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">网站副标题</label>
+                                <input type="text" class="form-control" name="site_subtitle"
+                                       value="{{ settings.site_subtitle }}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">作者姓名</label>
+                                <input type="text" class="form-control" name="author_name"
+                                       value="{{ settings.author_name }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">作者邮箱</label>
+                                <input type="email" class="form-control" name="author_email"
+                                       value="{{ settings.author_email }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="settings-card">
+                            <h5 class="text-white mb-3">
+                                <i class="fas fa-link me-2"></i>社交媒体链接
+                            </h5>
+
+                            <div class="mb-3">
+                                <label class="form-label">GitHub链接</label>
+                                <input type="url" class="form-control" name="github_url"
+                                       value="{{ settings.github_url }}" placeholder="https://github.com/username">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Twitter链接</label>
+                                <input type="url" class="form-control" name="twitter_url"
+                                       value="{{ settings.twitter_url }}" placeholder="https://twitter.com/username">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">LinkedIn链接</label>
+                                <input type="url" class="form-control" name="linkedin_url"
+                                       value="{{ settings.linkedin_url }}" placeholder="https://linkedin.com/in/username">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">页脚文字</label>
+                                <textarea class="form-control" name="footer_text" rows="2">{{ settings.footer_text }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h5 class="text-white mb-3">
+                        <i class="fas fa-user me-2"></i>关于页面内容
+                    </h5>
+
+                    <div class="mb-3">
+                        <label class="form-label">关于页面内容 (支持HTML)</label>
+                        <textarea class="form-control" name="about_content" rows="15"
+                                  placeholder="在这里编写关于页面的内容，支持HTML标签...">{{ settings.about_content }}</textarea>
+                        <small class="text-muted">支持HTML标签，如 &lt;h2&gt;、&lt;p&gt;、&lt;ul&gt;、&lt;li&gt; 等</small>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h5 class="text-white mb-3">
+                        <i class="fas fa-code me-2"></i>高级设置
+                    </h5>
+
+                    <div class="mb-3">
+                        <label class="form-label">网站统计代码 (Google Analytics等)</label>
+                        <textarea class="form-control" name="analytics_code" rows="4"
+                                  placeholder="在这里粘贴Google Analytics或其他统计代码...">{{ settings.analytics_code }}</textarea>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn-save">
+                        <i class="fas fa-save me-2"></i>保存所有设置
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+'''
+
+# 账号管理页面模板
+ADMIN_ACCOUNT_TEMPLATE = '''
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>账号管理 - 管理后台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    ''' + BASE_STYLES + '''
+    <style>
+        .account-card {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-control {
+            background: rgba(15, 23, 42, 0.8) !important;
+            border: 1px solid rgba(102, 126, 234, 0.3) !important;
+            color: white !important;
+            border-radius: 10px !important;
+        }
+
+        .form-control:focus {
+            background: rgba(15, 23, 42, 0.9) !important;
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+            color: white !important;
+        }
+
+        .form-label {
+            color: #e2e8f0 !important;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-update {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-update:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .current-info {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #e2e8f0;
+            font-weight: 600;
+        }
+
+        .alert {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .password-strength {
+            margin-top: 0.5rem;
+        }
+
+        .strength-bar {
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(102, 126, 234, 0.2);
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .strength-weak { background: #ef4444; width: 25%; }
+        .strength-fair { background: #f59e0b; width: 50%; }
+        .strength-good { background: #10b981; width: 75%; }
+        .strength-strong { background: #22c55e; width: 100%; }
+    </style>
+</head>
+<body>
+    ''' + BASE_JAVASCRIPT + '''
+
+    <div class="main-content" style="padding: 2rem;">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="text-white">
+                    <i class="fas fa-user-cog me-2"></i>账号管理
+                </h1>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-left me-2"></i>返回管理后台
+                </a>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }} me-2"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="account-card">
+                        <h5 class="text-white mb-3">
+                            <i class="fas fa-info-circle me-2"></i>当前账号信息
+                        </h5>
+
+                        <div class="current-info">
+                            <div class="info-item">
+                                <span class="info-label">用户名</span>
+                                <span class="info-value">{{ user.username }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">邮箱</span>
+                                <span class="info-value">{{ user.email }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">账号类型</span>
+                                <span class="info-value">
+                                    <span class="badge bg-primary">管理员</span>
+                                </span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">注册时间</span>
+                                <span class="info-value">{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else '未知' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="account-card">
+                        <h5 class="text-white mb-3">
+                            <i class="fas fa-edit me-2"></i>修改账号信息
+                        </h5>
+
+                        <form method="POST" id="accountForm">
+                            <div class="mb-3">
+                                <label class="form-label">当前密码 *</label>
+                                <input type="password" class="form-control" name="current_password" required
+                                       placeholder="请输入当前密码以验证身份">
+                                <small class="text-muted">修改任何信息都需要验证当前密码</small>
+                            </div>
+
+                            <hr style="border-color: rgba(102, 126, 234, 0.3);">
+
+                            <div class="mb-3">
+                                <label class="form-label">新用户名</label>
+                                <input type="text" class="form-control" name="username"
+                                       value="{{ user.username }}" placeholder="留空则不修改">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">新邮箱</label>
+                                <input type="email" class="form-control" name="email"
+                                       value="{{ user.email }}" placeholder="留空则不修改">
+                            </div>
+
+                            <hr style="border-color: rgba(102, 126, 234, 0.3);">
+
+                            <div class="mb-3">
+                                <label class="form-label">新密码</label>
+                                <input type="password" class="form-control" name="new_password" id="newPassword"
+                                       placeholder="留空则不修改密码">
+                                <div class="password-strength">
+                                    <div class="strength-bar">
+                                        <div class="strength-fill" id="strengthFill"></div>
+                                    </div>
+                                    <small class="text-muted" id="strengthText">密码强度：未设置</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">确认新密码</label>
+                                <input type="password" class="form-control" name="confirm_password" id="confirmPassword"
+                                       placeholder="请再次输入新密码">
+                                <small class="text-muted" id="passwordMatch"></small>
+                            </div>
+
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn-update">
+                                    <i class="fas fa-save me-2"></i>更新账号信息
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 密码强度检测
+        document.getElementById('newPassword').addEventListener('input', function() {
+            const password = this.value;
+            const strengthFill = document.getElementById('strengthFill');
+            const strengthText = document.getElementById('strengthText');
+
+            if (password.length === 0) {
+                strengthFill.className = 'strength-fill';
+                strengthText.textContent = '密码强度：未设置';
+                return;
+            }
+
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.match(/[a-z]/)) strength++;
+            if (password.match(/[A-Z]/)) strength++;
+            if (password.match(/[0-9]/)) strength++;
+            if (password.match(/[^a-zA-Z0-9]/)) strength++;
+
+            const levels = ['strength-weak', 'strength-fair', 'strength-good', 'strength-strong'];
+            const texts = ['弱', '一般', '良好', '强'];
+
+            if (strength <= 1) {
+                strengthFill.className = 'strength-fill strength-weak';
+                strengthText.textContent = '密码强度：弱';
+            } else if (strength <= 2) {
+                strengthFill.className = 'strength-fill strength-fair';
+                strengthText.textContent = '密码强度：一般';
+            } else if (strength <= 3) {
+                strengthFill.className = 'strength-fill strength-good';
+                strengthText.textContent = '密码强度：良好';
+            } else {
+                strengthFill.className = 'strength-fill strength-strong';
+                strengthText.textContent = '密码强度：强';
+            }
+        });
+
+        // 密码确认检测
+        function checkPasswordMatch() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const matchText = document.getElementById('passwordMatch');
+
+            if (newPassword === '' && confirmPassword === '') {
+                matchText.textContent = '';
+                return;
+            }
+
+            if (newPassword === confirmPassword) {
+                matchText.textContent = '✓ 密码匹配';
+                matchText.style.color = '#22c55e';
+            } else {
+                matchText.textContent = '✗ 密码不匹配';
+                matchText.style.color = '#ef4444';
+            }
+        }
+
+        document.getElementById('newPassword').addEventListener('input', checkPasswordMatch);
+        document.getElementById('confirmPassword').addEventListener('input', checkPasswordMatch);
     </script>
 </body>
 </html>
