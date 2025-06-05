@@ -1435,6 +1435,67 @@ INDEX_TEMPLATE = '''
             transform: translateY(-2px);
         }
 
+        /* 鼠标跟随动画效果 */
+        .cursor-trail {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.8) 0%, rgba(102, 126, 234, 0.2) 50%, transparent 100%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: all 0.1s ease-out;
+        }
+
+        .cursor-glow {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, rgba(102, 126, 234, 0.1) 30%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9997;
+            transform: translate(-50%, -50%);
+            transition: all 0.2s ease-out;
+        }
+
+        /* 动画关键帧 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.7;
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+                opacity: 0.3;
+            }
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .hero-title {
@@ -2202,8 +2263,105 @@ INDEX_TEMPLATE = '''
             }
         }
 
+        // 鼠标跟随动画效果
+        let cursorTrail = null;
+        let cursorGlow = null;
+
+        function initCursorEffects() {
+            // 创建鼠标跟随元素
+            cursorTrail = document.createElement('div');
+            cursorTrail.className = 'cursor-trail';
+            document.body.appendChild(cursorTrail);
+
+            cursorGlow = document.createElement('div');
+            cursorGlow.className = 'cursor-glow';
+            document.body.appendChild(cursorGlow);
+
+            // 鼠标移动事件
+            document.addEventListener('mousemove', function(e) {
+                const mouseX = e.clientX;
+                const mouseY = e.clientY;
+
+                // 更新鼠标跟随元素位置
+                cursorTrail.style.left = mouseX + 'px';
+                cursorTrail.style.top = mouseY + 'px';
+
+                cursorGlow.style.left = mouseX + 'px';
+                cursorGlow.style.top = mouseY + 'px';
+
+                // 创建粒子效果
+                if (Math.random() < 0.05) {
+                    createMouseParticle(mouseX, mouseY);
+                }
+            });
+
+            // 鼠标点击效果
+            document.addEventListener('click', function(e) {
+                createClickEffect(e.clientX, e.clientY);
+            });
+        }
+
+        // 创建鼠标粒子效果
+        function createMouseParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            particle.style.width = '3px';
+            particle.style.height = '3px';
+            particle.style.background = 'rgba(102, 126, 234, 0.6)';
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.zIndex = '9997';
+            particle.style.animation = 'float 2s ease-out forwards';
+
+            document.body.appendChild(particle);
+
+            // 2秒后移除粒子
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 2000);
+        }
+
+        // 创建点击效果
+        function createClickEffect(x, y) {
+            const ripple = document.createElement('div');
+            ripple.style.position = 'fixed';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.style.width = '0px';
+            ripple.style.height = '0px';
+            ripple.style.borderRadius = '50%';
+            ripple.style.background = 'rgba(102, 126, 234, 0.3)';
+            ripple.style.transform = 'translate(-50%, -50%)';
+            ripple.style.pointerEvents = 'none';
+            ripple.style.zIndex = '9997';
+            ripple.style.transition = 'all 0.6s ease-out';
+
+            document.body.appendChild(ripple);
+
+            // 触发动画
+            setTimeout(() => {
+                ripple.style.width = '80px';
+                ripple.style.height = '80px';
+                ripple.style.opacity = '0';
+            }, 10);
+
+            // 移除元素
+            setTimeout(() => {
+                if (ripple.parentNode) {
+                    ripple.parentNode.removeChild(ripple);
+                }
+            }, 600);
+        }
+
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', function() {
+            // 初始化鼠标效果
+            initCursorEffects();
+
             // 创建粒子背景
             createParticles();
 
@@ -2610,10 +2768,107 @@ BASE_JAVASCRIPT = '''
             }
         }
 
+        // 鼠标跟随动画效果
+        let cursorTrail = null;
+        let cursorGlow = null;
+
+        function initCursorEffects() {
+            // 创建鼠标跟随元素
+            cursorTrail = document.createElement('div');
+            cursorTrail.className = 'cursor-trail';
+            document.body.appendChild(cursorTrail);
+
+            cursorGlow = document.createElement('div');
+            cursorGlow.className = 'cursor-glow';
+            document.body.appendChild(cursorGlow);
+
+            // 鼠标移动事件
+            document.addEventListener('mousemove', function(e) {
+                const mouseX = e.clientX;
+                const mouseY = e.clientY;
+
+                // 更新鼠标跟随元素位置
+                cursorTrail.style.left = mouseX + 'px';
+                cursorTrail.style.top = mouseY + 'px';
+
+                cursorGlow.style.left = mouseX + 'px';
+                cursorGlow.style.top = mouseY + 'px';
+
+                // 创建粒子效果
+                if (Math.random() < 0.05) {
+                    createMouseParticle(mouseX, mouseY);
+                }
+            });
+
+            // 鼠标点击效果
+            document.addEventListener('click', function(e) {
+                createClickEffect(e.clientX, e.clientY);
+            });
+        }
+
+        // 创建鼠标粒子效果
+        function createMouseParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            particle.style.width = '3px';
+            particle.style.height = '3px';
+            particle.style.background = 'rgba(102, 126, 234, 0.6)';
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.zIndex = '9997';
+            particle.style.animation = 'float 2s ease-out forwards';
+
+            document.body.appendChild(particle);
+
+            // 2秒后移除粒子
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 2000);
+        }
+
+        // 创建点击效果
+        function createClickEffect(x, y) {
+            const ripple = document.createElement('div');
+            ripple.style.position = 'fixed';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.style.width = '0px';
+            ripple.style.height = '0px';
+            ripple.style.borderRadius = '50%';
+            ripple.style.background = 'rgba(102, 126, 234, 0.3)';
+            ripple.style.transform = 'translate(-50%, -50%)';
+            ripple.style.pointerEvents = 'none';
+            ripple.style.zIndex = '9997';
+            ripple.style.transition = 'all 0.6s ease-out';
+
+            document.body.appendChild(ripple);
+
+            // 触发动画
+            setTimeout(() => {
+                ripple.style.width = '80px';
+                ripple.style.height = '80px';
+                ripple.style.opacity = '0';
+            }, 10);
+
+            // 移除元素
+            setTimeout(() => {
+                if (ripple.parentNode) {
+                    ripple.parentNode.removeChild(ripple);
+                }
+            }, 600);
+        }
+
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', function() {
             // 创建粒子背景
             createParticles();
+
+            // 初始化鼠标效果
+            initCursorEffects();
 
             // 滚动事件监听
             window.addEventListener('scroll', handleNavbarScroll);
@@ -5708,9 +5963,9 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                                                 <i class="fas fa-link me-1"></i>链接
                                             </button>
                                         </div>
-                                        <textarea class="form-control" name="content" rows="12" required
+                                        <textarea class="form-control" name="content" id="content" rows="12" required
                                                   style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
-                                                  placeholder="请输入文章内容...支持Markdown格式"></textarea>
+                                                  placeholder="请输入文章内容...支持Markdown格式，支持Ctrl+V粘贴图片"></textarea>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6">
@@ -5916,7 +6171,7 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                                             </div>
                                             <textarea class="form-control" name="content" id="editContent" rows="12" required
                                                       style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(102, 126, 234, 0.3); color: white;"
-                                                      placeholder="请输入文章内容...支持Markdown格式">${post.content}</textarea>
+                                                      placeholder="请输入文章内容...支持Markdown格式，支持Ctrl+V粘贴图片">${post.content}</textarea>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-6">
@@ -6287,6 +6542,45 @@ ADMIN_DASHBOARD_TEMPLATE = '''
             }
         }
 
+        // 剪贴板图片粘贴功能
+        function setupClipboardPaste(textareaName) {
+            const textarea = document.querySelector(`textarea[name="${textareaName}"], textarea#${textareaName}`);
+            if (!textarea) return;
+
+            textarea.addEventListener('paste', async function(e) {
+                const items = e.clipboardData.items;
+
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+
+                    // 检查是否为图片
+                    if (item.type.indexOf('image') !== -1) {
+                        e.preventDefault();
+
+                        const file = item.getAsFile();
+                        if (file) {
+                            // 显示上传提示
+                            const originalPlaceholder = textarea.placeholder;
+                            textarea.placeholder = '正在上传图片...';
+                            textarea.disabled = true;
+
+                            try {
+                                await uploadImageFile(file, textareaName);
+                            } catch (error) {
+                                console.error('粘贴图片上传失败:', error);
+                                alert('粘贴图片上传失败: ' + error.message);
+                            } finally {
+                                // 恢复原状态
+                                textarea.placeholder = originalPlaceholder;
+                                textarea.disabled = false;
+                            }
+                        }
+                        break;
+                    }
+                }
+            });
+        }
+
         // 表单提交处理
         document.addEventListener('DOMContentLoaded', function() {
             const profileForm = document.getElementById('profileForm');
@@ -6300,10 +6594,12 @@ ADMIN_DASHBOARD_TEMPLATE = '''
                 loadProfile();
             }
 
-            // 为文本框设置拖拽上传
+            // 为文本框设置拖拽上传和剪贴板粘贴
             setTimeout(() => {
                 setupDragAndDrop('content');
                 setupDragAndDrop('editContent');
+                setupClipboardPaste('content');
+                setupClipboardPaste('editContent');
             }, 1000);
         });
 
